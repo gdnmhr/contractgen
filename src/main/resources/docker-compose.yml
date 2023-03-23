@@ -5,11 +5,12 @@ services:
     container_name: contractgen
     # build: .
     image: ghcr.io/gdnmhr/contractgen:latest
+    user: "${UID}:${GID}"
     volumes:
       - .:/home/yosys/resources
       - ../../..:/home/yosys/project
-    #entrypoint: /bin/bash
-    entrypoint: /home/yosys/resources/run.sh
+    entrypoint: /bin/bash
+    #entrypoint: /home/yosys/resources/run.sh
     stdin_open: true
     tty: true
     cap_add:
