@@ -1,8 +1,8 @@
 version: "3.7"
 
 services:
-  yosys:
-    container_name: yosys
+  contractgen:
+    container_name: contractgen
     # build: .
     image: ghcr.io/gdnmhr/contractgen:latest
     volumes:
