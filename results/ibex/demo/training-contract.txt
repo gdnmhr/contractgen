@@ -1,0 +1,33 @@
+TestResults: 
+	Total: 6000
+	Distinguishable: 488
+	Indistinguishable: 5512
+Contract: 
+	Size: 25
+	False Positives: 388
+	Inferred contract: 
+		BEQ: BRANCH_TAKEN
+		BGE: NEW_PC
+		BGEU: NEW_PC
+		BLT: NEW_PC
+		BLTU: NEW_PC
+		BNE: BRANCH_TAKEN
+		DIV: REG_RD
+		DIVU: REG_RD
+		JAL: IMM
+		JALR: NEW_PC
+		LB: RAW_RS1_1
+		LB: RAW_RS2_1
+		LBU: RAW_RS1_1
+		LBU: RAW_RS2_1
+		LH: IS_HALF_ALIGNED
+		LH: RAW_RS1_1
+		LH: RAW_RS2_1
+		LHU: IS_HALF_ALIGNED
+		LHU: RAW_RS1_1
+		LHU: RAW_RS2_1
+		LW: IS_ALIGNED
+		LW: RAW_RS1_1
+		LW: RAW_RS2_1
+		REM: REG_RS2
+		SH: MEM_R_DATA

@@ -1,0 +1,2 @@
+name,traningTotal,evalTotal,trueNegative,falseNegative,truePositive,falsePositive,precision,sensitivity,accuracy
+compare-ibma-l,345,2000000,621648,32,153021,1225299,0.11101993731499217,0.9997909220988808,0.3873345

@@ -1,0 +1,2 @@
+name,traningTotal,evalTotal,trueNegative,falseNegative,truePositive,falsePositive,precision,sensitivity,accuracy
+6k-9k,6000,10000,8404,137,1164,294,0.798423037367158,0.8943932411674347,0.95685

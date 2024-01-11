@@ -1,0 +1,2 @@
+name,traningTotal,evalTotal,trueNegative,falseNegative,truePositive,falsePositive,precision,sensitivity,accuracy
+cva6-demo,10,19,18,1,0,0,NaN,0.0,0.9473684210526315

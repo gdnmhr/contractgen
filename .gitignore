@@ -40,8 +40,5 @@ build/
 .idea/workspace.xml
 .idea/remote-targets.xml
 
-*.json
-*.csv
 *.vcd
-*.txt
-results-old/*
+

@@ -1,0 +1,9 @@
+TestResults: 
+	Total: 38
+	Distinguishable: 2
+	Indistinguishable: 36
+Contract: 
+	Size: 1
+	False Positives: 0
+	Inferred contract: 
+		LH: RS1

@@ -1,0 +1,13 @@
+TestResults: 
+	Total: 648
+	Distinguishable: 18
+	Indistinguishable: 630
+Contract: 
+	Size: 5
+	False Positives: 4
+	Inferred contract: 
+		ADDI: RAW_RS1_4
+		BGE: BRANCH_TAKEN
+		BLT: REG_RS2
+		DIVU: REG_RD
+		REM: REG_RD

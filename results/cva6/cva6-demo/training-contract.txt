@@ -1,0 +1,8 @@
+TestResults: 
+	Total: 20
+	Distinguishable: 0
+	Indistinguishable: 20
+Contract: 
+	Size: 0
+	False Positives: 0
+	Inferred contract: 

@@ -1,0 +1,11 @@
+TestResults: 
+	Total: 440
+	Distinguishable: 6
+	Indistinguishable: 434
+Contract: 
+	Size: 3
+	False Positives: 0
+	Inferred contract: 
+		BGE: REG_RS1
+		DIV: REG_RD
+		REM: REG_RD

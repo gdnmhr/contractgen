@@ -1,0 +1,2 @@
+2			BGE: REG_RS1
+4			REM: REG_RD

@@ -1,0 +1,2 @@
+name,traningTotal,evalTotal,trueNegative,falseNegative,truePositive,falsePositive,precision,sensitivity,accuracy
+compare-s-lf,20000,2000000,1808485,2364,150688,38461,0.7966613798572562,0.9845511032126126,0.979587
