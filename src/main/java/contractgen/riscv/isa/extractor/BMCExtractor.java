@@ -128,9 +128,6 @@ public class BMCExtractor implements Extractor {
         String new_pc_1 = left.getWire("rvfi_pc_wdata").getValueAt(t1);
         String new_pc_2 = right.getWire("rvfi_pc_wdata").getValueAt(t2);
 
-        System.out.println("at " + t1 + instr_1 + " is branch? " + is_branch_1 + "takes branch? " + branch_taken_1);
-        System.out.println(instr_2 + " is branch? " + is_branch_2 + "takes branch? " + branch_taken_2);
-
         if ((instr_1.isCONTROL() && instr_2.isCONTROL()) && !Objects.equals(is_branch_1, is_branch_2)) {
             obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.IS_BRANCH));
             obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.IS_BRANCH));
@@ -208,9 +205,6 @@ public class BMCExtractor implements Extractor {
         String reg_rs2_2 = right.getWire("rvfi_rs2_rdata").getValueAt(t2);
         String reg_rd_1 = left.getWire("rvfi_rd_wdata").getValueAt(t1);
         String reg_rd_2 = right.getWire("rvfi_rd_wdata").getValueAt(t2);
-
-        System.out.println(" with reg rs1:" + reg_rs1_1 + " reg rs2:" + reg_rs2_1 + " adn rd: " + reg_rd_1);
-        System.out.println(" with reg rs1:" + reg_rs1_2 + " reg rs2:" + reg_rs2_2 + " adn rd: " + reg_rd_2);
 
         if ((instr_1.hasRS1() && instr_2.hasRS1()) && !Objects.equals(reg_rs1_1, reg_rs1_2)) {
             obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.REG_RS1));
