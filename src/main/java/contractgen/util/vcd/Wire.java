@@ -77,6 +77,24 @@ public class Wire {
         return values.keySet().stream().sorted().filter(t -> StringUtils.equalValue(values.get(t), s)).findFirst().orElse(null);
     }
 
+    /**
+     * @param s     The requested value.
+     * @param after The last timestamp to not look at.
+     * @return The time at which the wire first had the requested value.
+     */
+    public Integer getFirstTimeValueAfter(String s, Integer after) {
+        return values.keySet().stream().sorted().filter(t -> t > after).filter(t -> StringUtils.equalValue(values.get(t), s)).findFirst().orElse(null);
+    }
+
+    /**
+     * @param s      The requested value.
+     * @param before The first timestamp to not look at.
+     * @return The time at which the wire first had the requested value.
+     */
+    public Integer getFirstTimeValueBefore(String s, Integer before) {
+        return values.keySet().stream().sorted().filter(t -> t < before).filter(t -> StringUtils.equalValue(values.get(t), s)).findFirst().orElse(null);
+    }
+
     @Override
     public String toString() {
         return "Wire{" +

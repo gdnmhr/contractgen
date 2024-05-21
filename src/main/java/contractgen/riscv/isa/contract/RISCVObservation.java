@@ -7,8 +7,8 @@ import contractgen.riscv.isa.RISCV_TYPE;
 /**
  * An onservation for the RISC-V ISA.
  *
- * @param type          The type of instruction this observation should be associated to.
- * @param observation   The observation type.
+ * @param type        The type of instruction this observation should be associated to.
+ * @param observation The observation type.
  */
 public record RISCVObservation(RISCV_TYPE type, RISCV_OBSERVATION_TYPE observation) implements Observation {
 
@@ -35,7 +35,7 @@ public record RISCVObservation(RISCV_TYPE type, RISCV_OBSERVATION_TYPE observati
         if (type == RISCV_TYPE.ADDI) return false;
         return switch (observation) {
             case TYPE, OPCODE, FUNCT3, FUNCT5 -> true;
-            case RD, REG_RD, WAW_1, WAW_2,WAW_3, WAW_4 -> RISCVInstruction.hasRD(type);
+            case RD, REG_RD, WAW_1, WAW_2, WAW_3, WAW_4 -> RISCVInstruction.hasRD(type);
             case RS1, REG_RS1, RAW_RS1_1, RAW_RS1_2, RAW_RS1_3, RAW_RS1_4 -> RISCVInstruction.hasRS1(type);
             case RS2, REG_RS2, RAW_RS2_1, RAW_RS2_2, RAW_RS2_3, RAW_RS2_4 -> RISCVInstruction.hasRS2(type);
             case IMM -> RISCVInstruction.hasIMM(type);
