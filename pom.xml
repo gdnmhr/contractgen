@@ -68,7 +68,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib</classpathPrefix>
-                            <mainClass>contractgen.ContractGen</mainClass>
+                            <mainClass>contractgen.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

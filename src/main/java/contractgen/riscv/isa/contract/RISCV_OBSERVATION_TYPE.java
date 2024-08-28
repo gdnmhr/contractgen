@@ -1,6 +1,7 @@
 package contractgen.riscv.isa.contract;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Possible observation types according to the contract template.
@@ -223,5 +224,31 @@ public enum RISCV_OBSERVATION_TYPE {
                 WAW_3,
                 WAW_4
         );
+    }
+
+    public enum RISCV_OBSERVATION_TYPE_GROUP {
+        BASE,
+        ALIGNED,
+        BRANCH,
+        DEPENDENCIES
+    }
+
+    public static Set<RISCV_OBSERVATION_TYPE> getGroup(RISCV_OBSERVATION_TYPE_GROUP group) {
+        switch (group) {
+            case BASE:
+                return getBase();
+            case ALIGNED:
+                return getAligned();
+            case BRANCH:
+                return getBranch();
+            case DEPENDENCIES:
+                return getDependencies();
+            default:
+                throw new IllegalArgumentException("Unknown group: " + group);
+        }
+    }
+
+    public static Set<RISCV_OBSERVATION_TYPE> getGroups(Set<RISCV_OBSERVATION_TYPE_GROUP> groups) {
+        return groups.stream().map(RISCV_OBSERVATION_TYPE::getGroup).flatMap(Set::stream).collect(Collectors.toSet());
     }
 }
