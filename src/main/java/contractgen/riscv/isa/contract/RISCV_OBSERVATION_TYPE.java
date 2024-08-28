@@ -22,7 +22,7 @@ public enum RISCV_OBSERVATION_TYPE {
     /**
      * The funct7 of the instruction
      */
-    FUNCT5(4, "funct_7"),
+    FUNCT7(4, "funct_7"),
     /**
      * The destination register.
      */
@@ -170,7 +170,7 @@ public enum RISCV_OBSERVATION_TYPE {
                 TYPE,
                 OPCODE,
                 FUNCT3,
-                FUNCT5,
+                FUNCT7,
                 RD,
                 RS1,
                 RS2,
