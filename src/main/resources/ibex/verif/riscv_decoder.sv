@@ -60,49 +60,21 @@ module riscv_decoder (
     assign funct_3_o = instr_i[14:12];
     assign funct_7_o = instr_i[31:25];
     assign format_o = (
-                            op_o == `ADD_OP || 
-                            op_o == `SUB_OP || 
-                            op_o == `SLL_OP || 
-                            op_o == `SLT_OP || 
-                            op_o == `SLTU_OP || 
-                            op_o == `XOR_OP || 
-                            op_o == `SRL_OP || 
-                            op_o == `SRA_OP || 
-                            op_o == `OR_OP || 
-                            op_o == `AND_OP
+                            op_o == `ADD_OP
                         ) ? `TYPE_R : 
                         (
                             (
                                 op_o == `SLLI_OP ||
-                                op_o == `SRLI_OP ||
-                                op_o == `SRAI_OP ||
                                 op_o == `JALR_OP ||
-                                op_o == `LB_OP ||
-                                op_o == `LH_OP ||
-                                op_o == `LW_OP ||
-                                op_o == `LBU_OP ||
-                                op_o == `LHU_OP ||
-                                op_o == `ADDI_OP ||
-                                op_o == `SLTI_OP ||
-                                op_o == `SLTIU_OP ||
-                                op_o == `XORI_OP ||
-                                op_o == `ORI_OP ||
-                                op_o == `ANDI_OP
+                                op_o == `LB_OP
                             ) ? `TYPE_I :
                             (
                                 (
-                                    op_o == `SB_OP ||
-                                    op_o == `SH_OP ||
-                                    op_o == `SW_OP
+                                    op_o == `SB_OP
                                 ) ? `TYPE_S :
                                 (
                                     (
-                                        op_o == `BEQ_OP ||
-                                        op_o == `BNE_OP ||
-                                        op_o == `BLT_OP ||
-                                        op_o == `BGE_OP ||
-                                        op_o == `BLTU_OP ||
-                                        op_o == `BGEU_OP
+                                        op_o == `BEQ_OP
                                     ) ? `TYPE_B :
                                     (
                                         op_o == `LUI_OP ||

@@ -11,7 +11,7 @@ public enum RISCV_OBSERVATION_TYPE {
     /**
      * The type of the instruction.
      */
-    TYPE(1, "format"),
+    FORMAT(1, "format"),
     /**
      * The opcode of the instruction.
      */
@@ -168,7 +168,7 @@ public enum RISCV_OBSERVATION_TYPE {
      */
     public static Set<RISCV_OBSERVATION_TYPE> getBase() {
         return Set.of(
-                TYPE,
+                FORMAT,
                 OPCODE,
                 FUNCT3,
                 FUNCT7,

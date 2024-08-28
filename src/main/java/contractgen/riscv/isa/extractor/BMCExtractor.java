@@ -235,9 +235,29 @@ public class BMCExtractor implements Extractor {
             instr_1 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("left").getWire("rvfi_insn").getValueAt(t1));
             instr_2 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("right").getWire("rvfi_insn").getValueAt(t2));
 
-            if (!Objects.equals(instr_1.type(), instr_2.type())) {
+            //if (!Objects.equals(instr_1.type(), instr_2.type())) {
+            //    obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.OPCODE));
+            //    obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.OPCODE));
+            //}
+
+            if (!Objects.equals(instr_1.type().getFormat(), instr_2.type().getFormat())) {
+                obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.FORMAT));
+                obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.FORMAT));
+            }
+
+            if (!Objects.equals(instr_1.type().getOpcode(), instr_2.type().getOpcode())) {
                 obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.OPCODE));
                 obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.OPCODE));
+            }
+
+            if (!Objects.equals(instr_1.type().getFunct3(), instr_2.type().getFunct3())) {
+                obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.FUNCT3));
+                obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.FUNCT3));
+            }
+
+            if (!Objects.equals(instr_1.type().getFunct7(), instr_2.type().getFunct7())) {
+                obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.FUNCT7));
+                obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.FUNCT7));
             }
 
             if ((instr_1.hasRD() && instr_2.hasRD()) && !Objects.equals(instr_1.rd(), instr_2.rd())) {
