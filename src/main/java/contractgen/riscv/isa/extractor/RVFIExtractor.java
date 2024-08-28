@@ -12,6 +12,7 @@ import contractgen.util.vcd.Module;
 import contractgen.util.vcd.VcdFile;
 import contractgen.util.vcd.Wire;
 
+import java.util.stream.Collectors;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,6 +24,13 @@ import java.util.Set;
  * Extracts possible contract observations from the RVFI intere.
  */
 public class RVFIExtractor implements Extractor {
+
+    private Set<RISCV_OBSERVATION_TYPE> allowed_observations;
+
+    public RVFIExtractor(Set<RISCV_OBSERVATION_TYPE> allowed_observations) {
+        this.allowed_observations = allowed_observations;
+    }
+
     @Override
     public Pair<TestResult, TestResult> extractResults(String PATH, boolean adversaryDistinguishable, int index) {
         VcdFile vcd;
@@ -54,7 +62,9 @@ public class RVFIExtractor implements Extractor {
                 compareDependencies(vcd, retire_count, currentCount, distance, instr_1, instr_2, obs1, obs2);
             }
             currentCount--;
-        }
+        }        
+        obs1 = obs1.stream().filter(o -> allowed_observations.contains(o.observation())).collect(Collectors.toSet());
+        obs2 = obs2.stream().filter(o -> allowed_observations.contains(o.observation())).collect(Collectors.toSet());
         return new Pair<>(new RISCVTestResult(obs1, adversaryDistinguishable, index * 2), new RISCVTestResult(obs2, adversaryDistinguishable, (index * 2) + 1));
     }
 

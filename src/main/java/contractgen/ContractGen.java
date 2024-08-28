@@ -89,7 +89,7 @@ public class ContractGen {
         Contract training_contract = switch (cfg.TRAINING_SOURCE) {
             case NEW -> {
                 TestCases training_tc = new RISCVIterativeTests(cfg.subsets, cfg.allowed_observations, cfg.TRAINING_NEW_SEED, cfg.THREADS, cfg.TRAINING_NEW_COUNT);
-                Generator training_generator = new ParallelIverilogGenerator(cfg.CORE == CONFIG.PROCESSOR.IBEX ? new IBEX(new ILPUpdater(), training_tc) : new CVA6(new ILPUpdater(), training_tc), cfg.THREADS, cfg.DEBUG, cfg);
+                Generator training_generator = new ParallelIverilogGenerator(cfg.CORE == CONFIG.PROCESSOR.IBEX ? new IBEX(new ILPUpdater(), training_tc, cfg.allowed_observations) : new CVA6(new ILPUpdater(), training_tc, cfg.allowed_observations), cfg.THREADS, cfg.DEBUG, cfg);
                 generate(training_generator, path + "training");
                 yield training_generator.MARCH.getISA().getContract();
             }
@@ -106,7 +106,7 @@ public class ContractGen {
         List<TestResult> eval_results = switch (cfg.EVAL_SOURCE) {
             case NEW -> {
                 TestCases eval_tc = new RISCVIterativeTests(cfg.subsets, cfg.allowed_observations, cfg.EVAL_NEW_SEED, cfg.THREADS, cfg.EVAL_NEW_COUNT);
-                Generator eval_generator = new ParallelIverilogGenerator(cfg.CORE == CONFIG.PROCESSOR.IBEX ? new IBEX(new ILPUpdater(), eval_tc) : new CVA6(new ILPUpdater(), eval_tc), cfg.THREADS, cfg.DEBUG, cfg);
+                Generator eval_generator = new ParallelIverilogGenerator(cfg.CORE == CONFIG.PROCESSOR.IBEX ? new IBEX(new ILPUpdater(), eval_tc, cfg.allowed_observations) : new CVA6(new ILPUpdater(), eval_tc, cfg.allowed_observations), cfg.THREADS, cfg.DEBUG, cfg);
                 generate(eval_generator, path + "eval");
                 yield eval_generator.MARCH.getISA().getContract().getTestResults();
             }

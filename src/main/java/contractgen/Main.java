@@ -87,7 +87,7 @@ class Synthesize implements Callable<Integer> {
     @Override
     public Integer call() {
         TestCases tc = new RISCVIterativeTests(isa, RISCV_OBSERVATION_TYPE.getGroups(template), seed, threads, number);
-        Generator generator = new ParallelIverilogGenerator(processor == CONFIG.PROCESSOR.IBEX ? new IBEX(new ILPUpdater(), tc) : new CVA6(new ILPUpdater(), tc), threads, false, null);
+        Generator generator = new ParallelIverilogGenerator(processor == CONFIG.PROCESSOR.IBEX ? new IBEX(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template)) : new CVA6(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template)), threads, false, null);
         
         long start = System.currentTimeMillis();
         Contract contract;
@@ -124,9 +124,13 @@ class Analyze implements Callable<Integer> {
     @Option(names = {"-o", "--output"}, required = true, description = "Output path (JSON)")
     File out;
 
+    // select contract template
+    @Option(names = {"-c", "--contract"}, required = true, description = "The contract template to use. Options: ${COMPLETION-CANDIDATES}", split = ",")
+    Set<RISCV_OBSERVATION_TYPE.RISCV_OBSERVATION_TYPE_GROUP> template;
+
     @Override
     public Integer call() {
-        Extractor extractor = new BMCExtractor();
+        Extractor extractor = new BMCExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
         Pair<TestResult, TestResult> res = extractor.extractResults(bmc_file.getPath(), true, 0);
         RISCVContract ctr = new RISCVContract(List.of(res.left(), res.right()), new ILPUpdater());
         System.out.println(ctr.toJSON());

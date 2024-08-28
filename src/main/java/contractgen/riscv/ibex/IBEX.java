@@ -2,11 +2,13 @@ package contractgen.riscv.ibex;
 
 import contractgen.*;
 import contractgen.riscv.isa.RISCV;
+import contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE;
 import contractgen.riscv.isa.extractor.RVFIExtractor;
 import contractgen.util.Pair;
 import contractgen.util.StringUtils;
 import contractgen.util.vcd.VcdFile;
 
+import java.util.Set;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,8 +46,8 @@ IBEX extends MARCH {
      * @param updater   The updater to be used to update the contract.
      * @param testCases The test cases to be used for generation or evaluation.
      */
-    public IBEX(Updater updater, TestCases testCases) {
-        super(new RISCV(updater, testCases), new RVFIExtractor());
+    public IBEX(Updater updater, TestCases testCases, Set<RISCV_OBSERVATION_TYPE> allowed_observations) {
+        super(new RISCV(updater, testCases), new RVFIExtractor(allowed_observations));
     }
 
     @Override
