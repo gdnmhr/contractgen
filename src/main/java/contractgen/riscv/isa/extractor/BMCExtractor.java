@@ -40,27 +40,32 @@ public class BMCExtractor implements Extractor {
         Set<RISCVObservation> obs2 = new HashSet<>();
         Wire valid1 = vcd.getTop().getChild("left").getWire("rvfi_valid");
         Wire valid2 = vcd.getTop().getChild("right").getWire("rvfi_valid");
-        Integer t1 = valid1.getFirstTimeValue("1");
-        Integer t2 = valid1.getFirstTimeValue("1");
+        Wire order1 = vcd.getTop().getChild("left").getWire("rvfi_order");
+        Wire order2 = vcd.getTop().getChild("right").getWire("rvfi_order");
+        int expected_order = 1;
+        Integer t1 = order1.getFirstTimeValue(Integer.toBinaryString(expected_order));
+        Integer t2 = order2.getFirstTimeValue(Integer.toBinaryString(expected_order));
         while (t1 != null && t2 != null) {
-            if (!compareInstructions(vcd, t1, t2, obs1, obs2)) {
-                // invalid instruction
-                t1 = valid1.getFirstTimeValueAfter("1", t1);
-                t2 = valid2.getFirstTimeValueAfter("1", t2);
-                continue;
+            if (!valid1.getValueAt(t1).equals("1") || !valid2.getValueAt(t2).equals("1")) {
+                throw new IllegalStateException("both rvfi should be valid.");
             }
-            RISCVInstruction instr_1 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("left").getWire("rvfi_insn").getValueAt(t1));
-            RISCVInstruction instr_2 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("right").getWire("rvfi_insn").getValueAt(t2));
+            if (compareInstructions(vcd, t1, t2, obs1, obs2)) {
+                // valid instruction
+                
+                RISCVInstruction instr_1 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("left").getWire("rvfi_insn").getValueAt(t1));
+                RISCVInstruction instr_2 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("right").getWire("rvfi_insn").getValueAt(t2));
 
-            compareRegisters(vcd, t1, t2, instr_1, instr_2, obs1, obs2);
-            compareMemory(vcd, t1, t2, instr_1, instr_2, obs1, obs2);
-            compareBranch(vcd, t1, t2, instr_1, instr_2, obs1, obs2);
+                compareRegisters(vcd, t1, t2, instr_1, instr_2, obs1, obs2);
+                compareMemory(vcd, t1, t2, instr_1, instr_2, obs1, obs2);
+                compareBranch(vcd, t1, t2, instr_1, instr_2, obs1, obs2);
 
-            for (int distance = 1; distance <= 4; distance++) {
-                compareDependencies(vcd, t1, t2, distance, instr_1, instr_2, obs1, obs2);
+                for (int distance = 1; distance <= 4; distance++) {
+                    compareDependencies(vcd, t1, t2, distance, instr_1, instr_2, obs1, obs2);
+                }
             }
-            t1 = valid1.getFirstTimeValueAfter("1", t1);
-            t2 = valid2.getFirstTimeValueAfter("1", t2);
+            expected_order++;
+            t1 = order1.getFirstTimeValue(Integer.toBinaryString(expected_order));
+            t2 = order2.getFirstTimeValue(Integer.toBinaryString(expected_order));
         }
         obs1 = obs1.stream().filter(o -> allowed_observations.contains(o.observation())).collect(Collectors.toSet());
         obs2 = obs2.stream().filter(o -> allowed_observations.contains(o.observation())).collect(Collectors.toSet());
