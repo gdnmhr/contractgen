@@ -180,7 +180,7 @@ module top (
 
     ibex_core #(
         .RV32M                  (ibex_pkg::RV32MSingleCycle),
-        .WritebackStage         (1'b1),
+        .WritebackStage         (1'b0),
     ) core_1 (
         .clk_i                  (clock_1),
         .rst_ni                 (reset_1),
@@ -253,7 +253,7 @@ module top (
 
     ibex_core #(
         .RV32M                  (ibex_pkg::RV32MSingleCycle),
-        .WritebackStage         (1'b1),
+        .WritebackStage         (1'b0),
     ) core_2 (
         .clk_i                  (clock_2),
         .rst_ni                 (reset_2),
