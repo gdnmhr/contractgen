@@ -138,8 +138,8 @@ public class BMCExtractor implements Extractor {
         Module right = vcd.getTop().getChild("right");
         Boolean is_branch_1 = instr_1.isBRANCH() || instr_1.isJUMP();
         Boolean is_branch_2 = instr_2.isBRANCH() || instr_2.isJUMP();
-        Boolean branch_taken_1 = Integer.parseInt(left.getChild("ibex_core").getWire("branch_decision").getValueAt(t1 - 15), 2) == 1 || instr_1.isJUMP();
-        Boolean branch_taken_2 = Integer.parseInt(right.getChild("ibex_core").getWire("branch_decision").getValueAt(t2 - 15), 2) == 1 || instr_2.isJUMP();
+        Boolean branch_taken_1 = Integer.parseInt(left.getChild("ibex_core").getWire("rvfi_branch_taken_ctr").getValueAt(t1), 2) == 1 || instr_1.isJUMP();
+        Boolean branch_taken_2 = Integer.parseInt(right.getChild("ibex_core").getWire("rvfi_branch_taken_ctr").getValueAt(t2), 2) == 1 || instr_2.isJUMP();
         String new_pc_1 = left.getWire("rvfi_pc_wdata").getValueAt(t1);
         String new_pc_2 = right.getWire("rvfi_pc_wdata").getValueAt(t2);
 
