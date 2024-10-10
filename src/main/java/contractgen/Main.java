@@ -216,17 +216,10 @@ class Evaluate implements Callable<Integer> {
     @Option(names = {"-o", "--output"}, required = true,  description = "Output path (JSON)")
     File out;
 
-    // select contract template
-    @Option(names = {"-a", "--atoms"}, required = true, description = "The contract template to use. Options: ${COMPLETION-CANDIDATES}", split = ",")
-    Set<RISCV_OBSERVATION_TYPE.RISCV_OBSERVATION_TYPE_GROUP> template;
-
-    // select number of threads
-    @Option(names = {"-t"}, required = true, description = "Number of threads")
-    int threads;
-
     @Override
     public Integer call() {
         try {
+            Files.createDirectories(out.toPath());
             ContractGen.basicStats(RISCVContract.fromJSON(new FileReader(contract)), RISCVContract.fromJSON(new FileReader(evalset)).getTestResults(), "Statistics", out.getPath() + "/stats", null);
         } catch (IOException e) {
             e.printStackTrace();
