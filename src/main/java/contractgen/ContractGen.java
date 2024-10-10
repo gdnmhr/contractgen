@@ -131,7 +131,7 @@ public class ContractGen {
      * @param global_path The path to write to global table.
      * @throws IOException
      */
-    private static void basicStats(Contract contract, List<TestResult> results, String name, String path, String global_path) throws IOException {
+    public static void basicStats(Contract contract, List<TestResult> results, String name, String path, String global_path) throws IOException {
         int true_positive = 0;
         int true_negative = 0;
         int false_positive = 0;
@@ -179,10 +179,12 @@ public class ContractGen {
         raw_stats.append(precision).append(",").append(sensitivity).append(",").append(accuracy).append("\n");
         stats_str.append(raw_stats);
         Files.write(Path.of(path + ".csv"), stats_str.toString().getBytes());
-        if (!Files.exists(Path.of(global_path + "stats.csv"))) {
-            Files.write(Path.of(global_path + "stats.csv"), stats_str.toString().getBytes());
-        } else {
-            Files.write(Path.of(global_path + "stats.csv"), raw_stats.toString().getBytes(), StandardOpenOption.APPEND);
+        if (global_path != null) {
+            if (!Files.exists(Path.of(global_path + "stats.csv"))) {
+                Files.write(Path.of(global_path + "stats.csv"), stats_str.toString().getBytes());
+            } else {
+                Files.write(Path.of(global_path + "stats.csv"), raw_stats.toString().getBytes(), StandardOpenOption.APPEND);
+            }
         }
     }
 

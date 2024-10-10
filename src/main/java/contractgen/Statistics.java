@@ -65,7 +65,6 @@ public class Statistics {
         @Override
         public void run() {
             int STEP_SIZE = 2;
-            Integer end = 2000;
             RISCVContract reference;
             try {
                 reference = RISCVContract.fromJSON(new FileReader(training));
@@ -78,9 +77,8 @@ public class Statistics {
             for (int i = 0; i < startingAt; i++) {
                 contract.add(reference.getTestResults().get(i));
             }
-            end = end == null ? reference.getTestResults().size() : end;
 
-            for (int i = startingAt; i < end; i++) {
+            for (int i = startingAt; i < reference.getTestResults().size(); i++) {
                 if (i % STEP_SIZE != 0 || (i / STEP_SIZE) % COUNT != id) {
                     contract.add(reference.getTestResults().get(i));
                     continue;

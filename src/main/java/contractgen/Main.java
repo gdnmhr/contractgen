@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 
 import java.util.concurrent.Callable;
 
-@Command(name = "main", subcommands = {Synthesize.class, Analyze.class, Update.class, PrintAtoms.class}, description = "Main application command.")
+@Command(name = "main", subcommands = {Synthesize.class, Analyze.class, Update.class, Evaluate.class, PrintAtoms.class}, description = "Main application command.")
 public class Main implements Callable<Integer> {
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Main()).execute(args);
@@ -200,6 +200,37 @@ class PrintAtoms implements Callable<Integer> {
         List<RISCVObservation> observationList = types.stream().map(type -> observations.stream().map(observation -> new RISCVObservation(type, observation)).toList()).flatMap(List::stream).toList();
         observationList = observationList.stream().filter(RISCVObservation::isApplicable).toList();
         observationList.forEach(System.out::println);
+        return 0;
+    }
+}
+
+@Command(name = "evaluate", description = "Evaluate a contract against a set of test cases.")
+class Evaluate implements Callable<Integer> {
+
+    @Option(names = {"-c", "--contract"}, required = true, description = "Verified contract (JSON)")
+    File contract;
+
+    @Option(names = {"-e", "--evalset"}, required = true,  description = "Evaluation set (JSON)")
+    File evalset;
+
+    @Option(names = {"-o", "--output"}, required = true,  description = "Output path (JSON)")
+    File out;
+
+    // select contract template
+    @Option(names = {"-a", "--atoms"}, required = true, description = "The contract template to use. Options: ${COMPLETION-CANDIDATES}", split = ",")
+    Set<RISCV_OBSERVATION_TYPE.RISCV_OBSERVATION_TYPE_GROUP> template;
+
+    // select number of threads
+    @Option(names = {"-t"}, required = true, description = "Number of threads")
+    int threads;
+
+    @Override
+    public Integer call() {
+        try {
+            ContractGen.basicStats(RISCVContract.fromJSON(new FileReader(contract)), RISCVContract.fromJSON(new FileReader(evalset)).getTestResults(), "Statistics", out.getPath() + "/stats", null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 }
