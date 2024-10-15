@@ -223,4 +223,8 @@ public class CVA6 extends MARCH {
     public String getName() {
         return "cva6";
     }
+
+    public String getSimulationTracePath(int id) {
+        return SIMULATION_PATH + id + "/" + "sim.vcd";
+    }
 }

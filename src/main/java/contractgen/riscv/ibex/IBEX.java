@@ -216,4 +216,8 @@ IBEX extends MARCH {
         }
         return simulate(PATH);
     }
+
+    public String getSimulationTracePath(int id) {
+        return SIMULATION_PATH + id + "/" + "sim.vcd";
+    }
 }

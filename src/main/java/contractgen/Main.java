@@ -1,5 +1,6 @@
 package contractgen;
 
+import contractgen.generator.iverilog.Falsifier;
 import contractgen.generator.iverilog.ParallelIverilogGenerator;
 import contractgen.riscv.cva6.CVA6;
 import contractgen.riscv.ibex.IBEX;
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
 
 import java.util.concurrent.Callable;
 
-@Command(name = "main", subcommands = {Synthesize.class, Analyze.class, Update.class, Evaluate.class, PrintAtoms.class}, description = "Main application command.")
+@Command(name = "main", subcommands = {Synthesize.class, Analyze.class, Update.class, Evaluate.class, Falsify.class, PrintAtoms.class}, description = "Main application command.")
 public class Main implements Callable<Integer> {
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Main()).execute(args);
@@ -227,3 +228,54 @@ class Evaluate implements Callable<Integer> {
         return 0;
     }
 }
+
+@Command(name = "falsify", description = "Falsify a contract and output false negatives.")
+class Falsify implements Callable<Integer> {
+
+    @Option(names = {"-v", "--verified-contract"}, required = true, description = "Verified contract (JSON)")
+    File contract;
+
+    // select the processor
+    @Option(names = {"-p", "--processor"}, required = true, description = "The processor to use. Options: ${COMPLETION-CANDIDATES}")
+    CONFIG.PROCESSOR processor;
+
+    // select ISA
+    @Option(names = {"-i", "--isa"}, required = true, description = "The ISA to use. Options: ${COMPLETION-CANDIDATES}", split = ",")
+    Set<RISCV_SUBSET> isa;
+
+    // select contract template
+    @Option(names = {"-c", "--contract"}, required = true, description = "The contract template to use. Options: ${COMPLETION-CANDIDATES}", split = ",")
+    Set<RISCV_OBSERVATION_TYPE.RISCV_OBSERVATION_TYPE_GROUP> template;
+
+    // select number of test cases
+    @Option(names = {"-n"}, required = true, description = "Number of test cases")
+    int number;
+
+    // select number of threads
+    @Option(names = {"-t"}, required = true, description = "Number of threads")
+    int threads;
+
+    // select seed
+    @Option(names = {"-s"}, required = true, description = "Seed")
+    long seed;
+
+    @Option(names = {"-o", "--output"}, required = true, description = "Output path")
+    Path out;
+
+    @Override
+    public Integer call() {
+       try {
+            RISCVContract ctr = RISCVContract.fromJSON(new FileReader(contract));
+            ctr.update(true);
+            out.toFile().mkdirs();
+            Files.write(out.resolve("contract.txt"), ctr.toString().getBytes());
+            TestCases tc = new RISCVIterativeTests(isa, RISCV_OBSERVATION_TYPE.getGroups(template), seed, threads, number);
+            Generator generator = new Falsifier(processor == CONFIG.PROCESSOR.IBEX ? new IBEX(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template)) : new CVA6(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template)), threads, ctr, out);
+            generator.generate();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+}
+

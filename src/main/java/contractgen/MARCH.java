@@ -143,4 +143,6 @@ public abstract class MARCH {
      * @return The name of the microarchitecture.
      */
     public abstract String getName();
+
+    public abstract String getSimulationTracePath(int id);
 }

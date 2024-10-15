@@ -273,4 +273,9 @@ public class SimpleMARCH extends MARCH {
     public String getName() {
         return "simple";
     }
+
+    @Override
+    public String getSimulationTracePath(int id) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 }
