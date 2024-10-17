@@ -144,6 +144,7 @@ public class Evaluator {
                     case FAIL -> fail.incrementAndGet();
                     case FALSE_POSITIVE -> false_positive.incrementAndGet();
                     case TIMEOUT -> timeout.incrementAndGet();
+                    case ERROR -> System.out.println("RISC-V error.");
                     case UNKNOWN -> System.out.println("Unknown error.");
                 }
             });

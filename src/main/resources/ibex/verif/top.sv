@@ -127,6 +127,8 @@ module top (
         logic [31:0] mem_addr_real_2;
         logic [31:0] new_pc_1;
         logic [31:0] new_pc_2;
+        logic rvfi_trap_1;
+        logic rvfi_trap_2;
     `endif
 
 
@@ -229,7 +231,7 @@ module top (
         .rvfi_valid(retire_1),
         .rvfi_order(),
         .rvfi_insn(retire_instr_1),
-        .rvfi_trap(),
+        .rvfi_trap(rvfi_trap_1),
         .rvfi_halt(),
         .rvfi_mode(),
         .rvfi_ixl(),
@@ -302,7 +304,7 @@ module top (
         .rvfi_valid(retire_2),
         .rvfi_order(),
         .rvfi_insn(retire_instr_2),
-        .rvfi_trap(),
+        .rvfi_trap(rvfi_trap_2),
         .rvfi_halt(),
         .rvfi_mode(),
         .rvfi_ixl(),

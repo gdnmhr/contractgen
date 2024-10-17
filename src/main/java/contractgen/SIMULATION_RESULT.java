@@ -21,6 +21,10 @@ public enum SIMULATION_RESULT {
      */
     TIMEOUT,
     /**
+     * An error occurred during the simulation.
+     */
+    ERROR,
+    /**
      * An unknown error occurred.
      */
     UNKNOWN

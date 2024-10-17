@@ -103,6 +103,17 @@ public class Falsifier extends Generator {
                 try {
                     MARCH.writeTestCase(id, testCase);
                     SIMULATION_RESULT pass = MARCH.simulate(id);
+                    if (pass == SIMULATION_RESULT.ERROR) {
+                        System.out.println("Runner[" + id + "] Simulation error for test case " + testCase.getIndex() + "!");
+                        outdir.resolve(Integer.toString(testCase.getIndex())).toFile().mkdirs();
+                        testCase.getProgram1().printInit(outdir.resolve(testCase.getIndex() + "/init_1.dat").toString());
+                        testCase.getProgram1().printInstr(outdir.resolve(testCase.getIndex() + "/memory_1.dat").toString());
+                        Files.write(outdir.resolve(testCase.getIndex() + "/program_1.txt"), testCase.getProgram1().toString().getBytes());
+                        testCase.getProgram2().printInit(outdir.resolve(testCase.getIndex() + "/init_2.dat").toString());
+                        testCase.getProgram2().printInstr(outdir.resolve(testCase.getIndex() + "/memory_2.dat").toString());
+                        Files.write(outdir.resolve(testCase.getIndex() + "/program_2.txt"), testCase.getProgram2().toString().getBytes());
+                        Files.copy(Path.of(MARCH.getSimulationTracePath(id)), outdir.resolve(testCase.getIndex() + "/trace.vcd"));
+                    } else
                     if (pass == SIMULATION_RESULT.FAIL) {
                         Pair<TestResult, TestResult> ctx = MARCH.extractDifferences(id, testCase.getIndex());
                         if (!ctr.covers(ctx.left()) || !ctr.covers(ctx.right())) {

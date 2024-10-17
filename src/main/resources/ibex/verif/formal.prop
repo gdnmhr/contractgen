@@ -1,4 +1,9 @@
     always @(posedge clk) begin
+        if ((retire_1 && (new_pc_1[1:0] != 2'b00 || rvfi_trap_1)) || (retire_2 && (new_pc_2[1:0] != 2'b00 || rvfi_trap_2)))
+        begin
+            $display("ERROR");
+            $finish;
+        end
         if (finished && ctr_equiv && !atk_equiv) 
         begin
             $display("FAIL");

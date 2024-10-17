@@ -201,6 +201,7 @@ public class CVA6 extends MARCH {
         if (output.contains("FALSE_POSITIVE")) return SIMULATION_RESULT.FALSE_POSITIVE;
         if (output.contains("SUCCESS")) return SIMULATION_RESULT.SUCCESS;
         if (output.contains("TIMEOUT")) return SIMULATION_RESULT.TIMEOUT;
+        if (output.contains("ERROR")) return SIMULATION_RESULT.ERROR;
         return SIMULATION_RESULT.UNKNOWN;
     }
 

@@ -181,7 +181,7 @@ public class ParallelIverilogGenerator extends Generator {
                             MARCH.getISA().getContract().add(ctx.right());
                         }
                     }
-                    case TIMEOUT, UNKNOWN -> {
+                    case ERROR, TIMEOUT, UNKNOWN -> {
                         System.out.println("Problem with test case:" + pass);
                         System.out.println(testCase);
                     }

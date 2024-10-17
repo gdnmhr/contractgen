@@ -99,6 +99,17 @@ public class RISCVTestGenerator {
 
     }
 
+    public static <T> List<T> insertAtSecondToLast(List<T> list, T element) {
+        // Create a new modifiable list
+        List<T> modifiableList = new ArrayList<>(list);
+
+        // Insert the element at the second-to-last position
+        modifiableList.add(modifiableList.size() - 1, element);
+
+        // Return an immutable copy of the new list
+        return Collections.unmodifiableList(modifiableList);
+    }
+
     /**
      * @param index starting index
      * @return a list of test cases.
@@ -112,6 +123,12 @@ public class RISCVTestGenerator {
             for (RISCV_OBSERVATION_TYPE observation : allowed_observations) {
                 Pair<List<RISCVInstruction>, List<RISCVInstruction>> prefix = alterObservation(observation, instruction);
                 if (prefix != null) {
+                    // ensure jalr are always aligned
+                    if (type == RISCV_TYPE.JALR) {
+                        prefix = new Pair<List<RISCVInstruction>,List<RISCVInstruction>>(
+                            insertAtSecondToLast(prefix.left(), RISCVInstruction.ANDI(prefix.left().get(prefix.left().size() - 1).rs1(), prefix.left().get(prefix.left().size() - 1).rs1(), MAX_IMM_I - 4)), 
+                            insertAtSecondToLast(prefix.right(), RISCVInstruction.ANDI(prefix.right().get(prefix.right().size() - 1).rs1(), prefix.right().get(prefix.right().size() - 1).rs1(), MAX_IMM_I - 4)));
+                    }
                     cases.add(new RISCVTestCase(
                             new RISCVProgram(registers, Stream.concat(prefix.left().stream(), suffix.stream()).toList()),
                             new RISCVProgram(registers, Stream.concat(prefix.right().stream(), suffix.stream()).toList()),
@@ -171,8 +188,14 @@ public class RISCVTestGenerator {
             }
             case IMM -> {
                 if (instruction.imm() == null) yield null;
-                RISCVInstruction ins1 = instruction.cloneAlteringIMM(r.nextLong(getBound(instruction)));
-                RISCVInstruction ins2 = instruction.cloneAlteringIMM(r.nextLong(getBound(instruction)));
+                long imm_1 = r.nextLong(getBound(instruction));
+                long imm_2 = r.nextLong(getBound(instruction));
+                if (instruction.type().getFormat() == RISCV_FORMAT.BTYPE || instruction.type() == RISCV_TYPE.JAL || instruction.type() == RISCV_TYPE.JALR) {
+                    imm_1 = imm_1 / 4 * 4;
+                    imm_2 = imm_2 / 4 * 4;
+                }
+                RISCVInstruction ins1 = instruction.cloneAlteringIMM(imm_1);
+                RISCVInstruction ins2 = instruction.cloneAlteringIMM(imm_2);
                 yield new Pair<>(List.of(ins1), List.of(ins2));
             }
             case REG_RS1 -> {
@@ -343,7 +366,13 @@ public class RISCVTestGenerator {
         List<RISCVInstruction> result = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             RISCV_TYPE type = types.get(r.nextInt(types.size() - 1));
-            result.add(randomInstructionFromType(type));
+            RISCVInstruction instruction = randomInstructionFromType(type);
+            // ensure jalr are always aligned
+            if (type == RISCV_TYPE.JALR) {
+                result.add(RISCVInstruction.ANDI(instruction.rs1(), instruction.rs1(), MAX_IMM_I - 4));
+                i++;
+            }
+            result.add(instruction);
         }
         return result;
     }
@@ -356,15 +385,19 @@ public class RISCVTestGenerator {
         return switch (type.getFormat()) {
             case RTYPE ->
                     RISCVInstruction.RTYPE(type, r.nextInt(1, NUMBER_REGISTERS), r.nextInt(NUMBER_REGISTERS), r.nextInt(NUMBER_REGISTERS));
-            case ITYPE ->
-                    RISCVInstruction.ITYPE(type, r.nextInt(1, NUMBER_REGISTERS), r.nextInt(NUMBER_REGISTERS), r.nextLong(MAX_IMM_I));
+            case ITYPE -> {
+                if (type == RISCV_TYPE.JALR) {
+                    yield RISCVInstruction.ITYPE(type, r.nextInt(1, NUMBER_REGISTERS), r.nextInt(NUMBER_REGISTERS), r.nextLong(MAX_IMM_I) / 4 * 4);
+                }
+                yield RISCVInstruction.ITYPE(type, r.nextInt(1, NUMBER_REGISTERS), r.nextInt(NUMBER_REGISTERS), r.nextLong(MAX_IMM_I));
+            }
             case STYPE ->
                     RISCVInstruction.STYPE(type, r.nextInt(NUMBER_REGISTERS), r.nextInt(NUMBER_REGISTERS), r.nextLong(MAX_IMM_I));
             case BTYPE ->
-                    RISCVInstruction.BTYPE(type, r.nextInt(NUMBER_REGISTERS), r.nextInt(NUMBER_REGISTERS), r.nextLong(MAX_IMM_B));
+                    RISCVInstruction.BTYPE(type, r.nextInt(NUMBER_REGISTERS), r.nextInt(NUMBER_REGISTERS), (r.nextLong(MAX_IMM_B) / 4 * 4));
             case UTYPE ->
                     RISCVInstruction.UTYPE(type, r.nextInt(1, NUMBER_REGISTERS), r.nextLong(MAX_IMM_I - 1, MAX_IMM_U));
-            case JTYPE -> RISCVInstruction.JTYPE(type, r.nextInt(1, NUMBER_REGISTERS), r.nextLong(MAX_IMM_J));
+            case JTYPE -> RISCVInstruction.JTYPE(type, r.nextInt(1, NUMBER_REGISTERS), (r.nextLong(MAX_IMM_J) / 4 * 4));
         };
     }
 }

@@ -200,6 +200,8 @@ IBEX extends MARCH {
             return SIMULATION_RESULT.SUCCESS;
         if (output.contains("TIMEOUT"))
             return SIMULATION_RESULT.TIMEOUT;
+        if (output.contains("ERROR"))
+            return SIMULATION_RESULT.ERROR;
         return SIMULATION_RESULT.UNKNOWN;
     }
 
