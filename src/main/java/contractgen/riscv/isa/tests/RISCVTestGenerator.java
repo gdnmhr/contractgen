@@ -378,7 +378,7 @@ public class RISCVTestGenerator {
     }
 
     /**
-     * @param type the ytype of the desired instruction
+     * @param type the type of the desired instruction
      * @return a random instance of an instruction of the given type.
      */
     private RISCVInstruction randomInstructionFromType(RISCV_TYPE type) {

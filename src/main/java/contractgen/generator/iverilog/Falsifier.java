@@ -39,11 +39,17 @@ public class Falsifier extends Generator {
     public Contract generate() throws IOException {
         System.out.println("Evaluating " + MARCH.getISA().getTestCases().getTotalNumber() + " test cases.");
         AtomicInteger atomic_i = new AtomicInteger(0);
+        AtomicInteger error = new AtomicInteger(0);
+        AtomicInteger fail = new AtomicInteger(0);
         MARCH.compile();
         outdir.toFile().mkdirs();
+        Path errorPath = outdir.resolve("error");
+        errorPath.toFile().mkdirs();
+        Path falseNegativesPath = outdir.resolve("falseNegatives");
+        falseNegativesPath.toFile().mkdirs();
         List<Thread> runners = new ArrayList<>();
         for (int i = 0; i < COUNT; i++) {
-            runners.add(new Thread(new Runner(MARCH, i + 1, atomic_i, ctr, outdir.resolve(Integer.toString(i + 1))), "Runner_" + (i + 1)));
+            runners.add(new Thread(new Runner(MARCH, i + 1, atomic_i, error, fail, ctr, errorPath, falseNegativesPath), "Runner_" + (i + 1)));
         }
         runners.forEach(Thread::start);
         runners.forEach(t -> {
@@ -53,6 +59,8 @@ public class Falsifier extends Generator {
                 throw new RuntimeException(e);
             }
         });
+        System.out.println("Total number of errors: " + error.get());
+        System.out.println("Total number of false negatives: " + fail.get());
         return null;
     }
     
@@ -74,13 +82,25 @@ public class Falsifier extends Generator {
          */
         private final AtomicInteger atomic_i;
         /**
+         * A synchronized counter for simulation errors.
+         */
+        private final AtomicInteger error;
+        /**
+         * A synchronized counter for false negatives.
+         */
+        private final AtomicInteger fail;
+        /**
          * The contract to falsify.
          */
         private final RISCVContract ctr;
         /**
+         * A path to copy simulation errors to.
+         */
+        private final Path errorPath;
+        /**
          * A path to copy false negatives to.
          */
-        private final Path outdir;
+        private final Path falseNegativesPath;
 
         /**
          * @param MARCH    The microarchitecture.
@@ -88,54 +108,60 @@ public class Falsifier extends Generator {
          * @param atomic_i A synchronized counter to show a progress.
          * @param stats    A path to copy false negatives to.
          */
-        Runner(MARCH MARCH, int id, AtomicInteger atomic_i, RISCVContract ctr, Path outdir) {
+        Runner(MARCH MARCH, int id, AtomicInteger atomic_i, AtomicInteger error, AtomicInteger fail, RISCVContract ctr, Path errorPath, Path falseNegativesPath) {
             this.MARCH = MARCH;
             this.id = id;
             this.atomic_i = atomic_i;
+            this.error = error;
+            this.fail = fail;
             this.ctr = ctr;
-            this.outdir = outdir;
+            this.errorPath = errorPath;
+            this.falseNegativesPath = falseNegativesPath;
         }
 
         @Override
         public void run() {
-            outdir.toFile().mkdirs();
             MARCH.getISA().getTestCases().getIterator(id - 1).forEachRemaining(testCase -> {
                 try {
                     MARCH.writeTestCase(id, testCase);
                     SIMULATION_RESULT pass = MARCH.simulate(id);
                     if (pass == SIMULATION_RESULT.ERROR) {
+                        int errno = error.incrementAndGet();
+                        Path path = errorPath.resolve(Integer.toString(errno));
+                        path.toFile().mkdirs();
                         System.out.println("Runner[" + id + "] Simulation error for test case " + testCase.getIndex() + "!");
-                        outdir.resolve(Integer.toString(testCase.getIndex())).toFile().mkdirs();
-                        testCase.getProgram1().printInit(outdir.resolve(testCase.getIndex() + "/init_1.dat").toString());
-                        testCase.getProgram1().printInstr(outdir.resolve(testCase.getIndex() + "/memory_1.dat").toString());
-                        Files.write(outdir.resolve(testCase.getIndex() + "/program_1.txt"), testCase.getProgram1().toString().getBytes());
-                        testCase.getProgram2().printInit(outdir.resolve(testCase.getIndex() + "/init_2.dat").toString());
-                        testCase.getProgram2().printInstr(outdir.resolve(testCase.getIndex() + "/memory_2.dat").toString());
-                        Files.write(outdir.resolve(testCase.getIndex() + "/program_2.txt"), testCase.getProgram2().toString().getBytes());
-                        Files.copy(Path.of(MARCH.getSimulationTracePath(id)), outdir.resolve(testCase.getIndex() + "/trace.vcd"));
+                        testCase.getProgram1().printInit(path.resolve("init_1.dat").toString());
+                        testCase.getProgram1().printInstr(path.resolve("memory_1.dat").toString());
+                        Files.write(path.resolve("program_1.txt"), testCase.getProgram1().toString().getBytes());
+                        testCase.getProgram2().printInit(path.resolve("init_2.dat").toString());
+                        testCase.getProgram2().printInstr(path.resolve("memory_2.dat").toString());
+                        Files.write(path.resolve("program_2.txt"), testCase.getProgram2().toString().getBytes());
+                        Files.copy(Path.of(MARCH.getSimulationTracePath(id)), path.resolve("trace.vcd"));
                     } else
                     if (pass == SIMULATION_RESULT.FAIL) {
                         Pair<TestResult, TestResult> ctx = MARCH.extractDifferences(id, testCase.getIndex());
                         if (!ctr.covers(ctx.left()) || !ctr.covers(ctx.right())) {
+                            int failno = fail.incrementAndGet();
+                            Path path = falseNegativesPath.resolve(Integer.toString(failno));
+                            path.toFile().mkdirs();
                             System.out.println("Runner[" + id + "] False negative found for test case " + testCase.getIndex() + "!");
                             // copy files to output folder
-                            outdir.resolve(Integer.toString(testCase.getIndex())).toFile().mkdirs();
-                            testCase.getProgram1().printInit(outdir.resolve(testCase.getIndex() + "/init_1.dat").toString());
-                            testCase.getProgram1().printInstr(outdir.resolve(testCase.getIndex() + "/memory_1.dat").toString());
-                            Files.write(outdir.resolve(testCase.getIndex() + "/program_1.txt"), testCase.getProgram1().toString().getBytes());
-                            testCase.getProgram2().printInit(outdir.resolve(testCase.getIndex() + "/init_2.dat").toString());
-                            testCase.getProgram2().printInstr(outdir.resolve(testCase.getIndex() + "/memory_2.dat").toString());
-                            Files.write(outdir.resolve(testCase.getIndex() + "/program_2.txt"), testCase.getProgram2().toString().getBytes());
-                            Files.copy(Path.of(MARCH.getSimulationTracePath(id)), outdir.resolve(testCase.getIndex() + "/trace.vcd"));
+                            testCase.getProgram1().printInit(path.resolve("init_1.dat").toString());
+                            testCase.getProgram1().printInstr(path.resolve("memory_1.dat").toString());
+                            Files.write(path.resolve("program_1.txt"), testCase.getProgram1().toString().getBytes());
+                            testCase.getProgram2().printInit(path.resolve("init_2.dat").toString());
+                            testCase.getProgram2().printInstr(path.resolve("memory_2.dat").toString());
+                            Files.write(path.resolve("program_2.txt"), testCase.getProgram2().toString().getBytes());
+                            Files.copy(Path.of(MARCH.getSimulationTracePath(id)), path.resolve("trace.vcd"));
                             {
                                 final StringBuilder sb = new StringBuilder();
                                 ctx.left().getPossibleObservations().forEach(o -> sb.append(o.toString()).append("\n"));
-                                Files.write(outdir.resolve(testCase.getIndex() + "/obs1.txt"), sb.toString().getBytes());
+                                Files.write(path.resolve("obs1.txt"), sb.toString().getBytes());
                             }
                             {
                                 final StringBuilder sb = new StringBuilder();
                                 ctx.right().getPossibleObservations().forEach(o -> sb.append(o.toString()).append("\n"));
-                                Files.write(outdir.resolve(testCase.getIndex() + "/obs2.txt"), sb.toString().getBytes());
+                                Files.write(path.resolve("obs2.txt"), sb.toString().getBytes());
                             }
                         }
                     }
