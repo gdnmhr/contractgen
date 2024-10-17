@@ -24,6 +24,7 @@ public class RISCVSimpleTestCases extends TestCases {
     /**
      * @return one test case executing addi instructions.
      */
+    @SuppressWarnings("unused")
     private static List<TestCase> getSimpleTestsAdds() {
         RISCVProgram p1 = new RISCVProgram(new HashMap<>(), List.of(RISCVInstruction.ADDI(1, 0, 10), RISCVInstruction.ADD(2, 1, 1), RISCVInstruction.ADDI(3, 2, 10)));
         RISCVProgram p2 = new RISCVProgram(new HashMap<>(), List.of(RISCVInstruction.ADDI(1, 0, 10), RISCVInstruction.ADD(2, 1, 1), RISCVInstruction.ADDI(1, 1, 4)));

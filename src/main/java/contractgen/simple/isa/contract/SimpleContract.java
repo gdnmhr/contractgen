@@ -3,7 +3,6 @@ package contractgen.simple.isa.contract;
 import contractgen.Contract;
 import contractgen.Updater;
 import contractgen.simple.isa.SIMPLE_TYPE;
-import contractgen.updater.PowerSetUpdater;
 
 import java.util.*;
 import java.util.stream.Collectors;

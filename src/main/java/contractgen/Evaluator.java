@@ -87,6 +87,7 @@ public class Evaluator {
         /**
          * The total number of threads
          */
+        @SuppressWarnings("unused")
         private final int COUNT;
         /**
          * A shared integer to track progress among all threads

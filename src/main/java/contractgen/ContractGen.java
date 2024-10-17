@@ -3,17 +3,13 @@ package contractgen;
 import contractgen.generator.iverilog.ParallelIverilogGenerator;
 import contractgen.riscv.cva6.CVA6;
 import contractgen.riscv.ibex.IBEX;
-import contractgen.riscv.isa.RISCVInstruction;
 import contractgen.riscv.isa.contract.RISCVContract;
 import contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE;
 
 import static contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE.*;
 
 import contractgen.riscv.isa.tests.RISCVIterativeTests;
-import contractgen.riscv.isa.tests.RISCVSimpleTestCases;
 import contractgen.updater.ILPUpdater;
-import contractgen.util.FileUtils;
-import contractgen.util.StringUtils;
 
 import java.io.FileReader;
 import java.io.FileWriter;

@@ -6,7 +6,6 @@ import contractgen.riscv.isa.contract.RISCVTestResult;
 import contractgen.riscv.isa.contract.RISCVObservation;
 import contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE;
 import contractgen.util.Pair;
-import contractgen.util.StringUtils;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -22,6 +21,7 @@ public class RISCVTestGenerator {
     /**
      * The maximum value of a register.
      */
+    @SuppressWarnings("unused")
     private static final long MAX_REG = 4294967296L;
     /**
      * The maximum value of a I-type immediate.

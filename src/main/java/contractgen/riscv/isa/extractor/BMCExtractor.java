@@ -7,7 +7,6 @@ import contractgen.riscv.isa.contract.RISCVObservation;
 import contractgen.riscv.isa.contract.RISCVTestResult;
 import contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE;
 import contractgen.util.Pair;
-import contractgen.util.StringUtils;
 import contractgen.util.vcd.Module;
 import contractgen.util.vcd.VcdFile;
 import contractgen.util.vcd.Wire;

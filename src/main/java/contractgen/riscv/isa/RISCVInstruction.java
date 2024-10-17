@@ -3,13 +3,8 @@ package contractgen.riscv.isa;
 import contractgen.Instruction;
 import contractgen.util.StringUtils;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A RISC-V instruction.

@@ -149,7 +149,6 @@ public class ParallelIverilogGenerator extends Generator {
                 }
                 int i = atomic_i.incrementAndGet();
                 System.out.printf("Current progress: %d of %d.\r", i, MARCH.getISA().getTestCases().getTotalNumber());
-                boolean change = false;
                 switch (pass) {
                     case SUCCESS, FALSE_POSITIVE -> {
                         if (DEBUG) {
