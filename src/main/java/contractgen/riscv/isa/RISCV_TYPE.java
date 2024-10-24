@@ -92,8 +92,16 @@ public enum RISCV_TYPE {
         return opcode;
     }
 
+    public boolean hasFunct3() {
+        return funct3 != null;
+    }
+
     public String getFunct3() {
         return funct3;
+    }
+
+    public boolean hasFunct7() {
+        return funct7 != null;
     }
 
     public String getFunct7() {

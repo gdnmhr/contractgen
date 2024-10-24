@@ -182,7 +182,7 @@ public class ParallelIverilogGenerator extends Generator {
                         }
                     }
                     case ERROR, TIMEOUT, UNKNOWN -> {
-                        System.out.println("Problem with test case:" + pass);
+                        System.out.println("Problem with test case: " + pass);
                         System.out.println(testCase);
                     }
                 }

@@ -264,12 +264,12 @@ public class BMCExtractor implements Extractor {
                 obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.OPCODE));
             }
 
-            if (!Objects.equals(instr_1.type().getFunct3(), instr_2.type().getFunct3())) {
+            if ((instr_1.type().hasFunct3() && instr_2.type().hasFunct3()) && !Objects.equals(instr_1.type().getFunct3(), instr_2.type().getFunct3())) {
                 obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.FUNCT3));
                 obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.FUNCT3));
             }
 
-            if (!Objects.equals(instr_1.type().getFunct7(), instr_2.type().getFunct7())) {
+            if ((instr_1.type().hasFunct7() && instr_2.type().hasFunct7()) && !Objects.equals(instr_1.type().getFunct7(), instr_2.type().getFunct7())) {
                 obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.FUNCT7));
                 obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.FUNCT7));
             }
