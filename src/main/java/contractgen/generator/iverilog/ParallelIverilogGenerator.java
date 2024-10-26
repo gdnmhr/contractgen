@@ -154,15 +154,14 @@ public class ParallelIverilogGenerator extends Generator {
                         if (DEBUG) {
                             start = System.currentTimeMillis();
                         }
-                        Pair<TestResult, TestResult> positive_ctx = MARCH.extractDifferences(id, testCase.getIndex());
+                        TestResult positive_ctx = MARCH.extractDifferences(id, testCase.getIndex());
                         if (DEBUG) {
                             finish = System.currentTimeMillis();
                             timeElapsed = finish - start;
                             sum_ana.addAndGet(timeElapsed);
                         }
                         synchronized (MARCH.getISA().getContract()) {
-                            MARCH.getISA().getContract().add(positive_ctx.left());
-                            MARCH.getISA().getContract().add(positive_ctx.right());
+                            MARCH.getISA().getContract().add(positive_ctx);
                         }
                     }
                     case FAIL -> {
@@ -170,15 +169,14 @@ public class ParallelIverilogGenerator extends Generator {
                         if (DEBUG) {
                             start = System.currentTimeMillis();
                         }
-                        Pair<TestResult, TestResult> ctx = MARCH.extractCTX(id, testCase);
+                        TestResult ctx = MARCH.extractCTX(id, testCase);
                         if (DEBUG) {
                             finish = System.currentTimeMillis();
                             timeElapsed = finish - start;
                             sum_ana.addAndGet(timeElapsed);
                         }
                         synchronized (MARCH.getISA().getContract()) {
-                            MARCH.getISA().getContract().add(ctx.left());
-                            MARCH.getISA().getContract().add(ctx.right());
+                            MARCH.getISA().getContract().add(ctx);
                         }
                     }
                     case ERROR, TIMEOUT, UNKNOWN -> {

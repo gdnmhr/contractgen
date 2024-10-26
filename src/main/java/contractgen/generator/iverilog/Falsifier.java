@@ -139,8 +139,8 @@ public class Falsifier extends Generator {
                         Files.copy(Path.of(MARCH.getSimulationTracePath(id)), path.resolve("trace.vcd"));
                     } else
                     if (pass == SIMULATION_RESULT.FAIL) {
-                        Pair<TestResult, TestResult> ctx = MARCH.extractDifferences(id, testCase.getIndex());
-                        if (!ctr.covers(ctx.left()) || !ctr.covers(ctx.right())) {
+                        TestResult ctx = MARCH.extractDifferences(id, testCase.getIndex());
+                        if (!ctr.covers(ctx)) {
                             int failno = fail.incrementAndGet();
                             Path path = falseNegativesPath.resolve(Integer.toString(failno));
                             path.toFile().mkdirs();
@@ -155,13 +155,8 @@ public class Falsifier extends Generator {
                             Files.copy(Path.of(MARCH.getSimulationTracePath(id)), path.resolve("trace.vcd"));
                             {
                                 final StringBuilder sb = new StringBuilder();
-                                ctx.left().getPossibleObservations().forEach(o -> sb.append(o.toString()).append("\n"));
-                                Files.write(path.resolve("obs1.txt"), sb.toString().getBytes());
-                            }
-                            {
-                                final StringBuilder sb = new StringBuilder();
-                                ctx.right().getPossibleObservations().forEach(o -> sb.append(o.toString()).append("\n"));
-                                Files.write(path.resolve("obs2.txt"), sb.toString().getBytes());
+                                ctx.getPossibleObservations().forEach(o -> sb.append(o.toString()).append("\n"));
+                                Files.write(path.resolve("obs.txt"), sb.toString().getBytes());
                             }
                         }
                     }

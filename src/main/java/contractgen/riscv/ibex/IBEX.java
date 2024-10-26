@@ -71,12 +71,12 @@ IBEX extends MARCH {
     }
 
     @Override
-    public Pair<TestResult, TestResult> extractCTX(TestCase testCase) {
+    public TestResult extractCTX(TestCase testCase) {
         return extractCTX(SIMULATION_PATH, testCase);
     }
 
     @Override
-    public Pair<TestResult, TestResult> extractCTX(int id, TestCase testCase) {
+    public TestResult extractCTX(int id, TestCase testCase) {
         return extractCTX(SIMULATION_PATH + id + "/", testCase);
     }
 
@@ -85,7 +85,7 @@ IBEX extends MARCH {
      * @param testCase The simulated testcase.
      * @return A set of two test results
      */
-    private Pair<TestResult, TestResult> extractCTX(String PATH, TestCase testCase) {
+    private TestResult extractCTX(String PATH, TestCase testCase) {
         VcdFile vcd;
         try {
             vcd = new VcdFile(Files.readString(Path.of(PATH + "sim.vcd")));
@@ -105,12 +105,12 @@ IBEX extends MARCH {
     }
 
     @Override
-    public Pair<TestResult, TestResult> extractDifferences(int index) {
+    public TestResult extractDifferences(int index) {
         return extractDifferences(SIMULATION_PATH, false, index);
     }
 
     @Override
-    public Pair<TestResult, TestResult> extractDifferences(int id, int index) {
+    public TestResult extractDifferences(int id, int index) {
         return extractDifferences(SIMULATION_PATH + id + "/", false, index);
     }
 
@@ -120,7 +120,7 @@ IBEX extends MARCH {
      * @param index                    the index of the testcase for further reference.
      * @return The differences that would allow a contract to distinguish the two executions.
      */
-    private Pair<TestResult, TestResult> extractDifferences(String PATH, boolean adversaryDistinguishable, int index) {
+    private TestResult extractDifferences(String PATH, boolean adversaryDistinguishable, int index) {
         return getExtractor().extractResults(PATH, adversaryDistinguishable, index);
     }
 

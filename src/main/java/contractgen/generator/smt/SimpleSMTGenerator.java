@@ -23,9 +23,8 @@ public class SimpleSMTGenerator extends Generator {
             int steps = MARCH.extractSteps(coverTrace);
             boolean pass = MARCH.run(steps);
             if (!pass) {
-                Pair<TestResult, TestResult> ctx = MARCH.extractCTX(testCase);
-                MARCH.getISA().getContract().add(ctx.left());
-                MARCH.getISA().getContract().add(ctx.right());
+                TestResult ctx = MARCH.extractCTX(testCase);
+                MARCH.getISA().getContract().add(ctx);
                 MARCH.getISA().getContract().update(false);
             }
         });

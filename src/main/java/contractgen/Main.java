@@ -128,8 +128,8 @@ class Analyze implements Callable<Integer> {
     @Override
     public Integer call() {
         Extractor extractor = new BMCExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
-        Pair<TestResult, TestResult> res = extractor.extractResults(bmc_file.getPath(), true, 0);
-        RISCVContract ctr = new RISCVContract(List.of(res.left(), res.right()), new ILPUpdater());
+        TestResult res = extractor.extractResults(bmc_file.getPath(), true, 0);
+        RISCVContract ctr = new RISCVContract(List.of(res), new ILPUpdater());
         System.out.println(ctr.toJSON());
         try (FileWriter writer = new FileWriter(out)) {
             ctr.toJSON(writer);

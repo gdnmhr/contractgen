@@ -162,7 +162,7 @@ public class ContractGen {
         fp_counter.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).forEach(e -> fp_str.append(e.getValue()).append("\t").append(e.getKey()).append("\n"));
         Files.write(Path.of(path + "-false-positives.txt"), fp_str.toString().getBytes());
         StringBuilder fn_str = new StringBuilder();
-        fn_set.forEach(res -> fn_str.append(res.getIndex() / 2).append(":\t").append(res.getPossibleObservations()).append("\n"));
+        fn_set.forEach(res -> fn_str.append(res.getIndex()).append(":\t").append(res.getPossibleObservations()).append("\n"));
         Files.write(Path.of(path + "-false-negatives.txt"), fn_str.toString().getBytes());
         double precision = ((double) true_positive) / ((double) true_positive + false_positive);
         double sensitivity = ((double) true_positive) / ((double) true_positive + false_negative);
@@ -170,8 +170,8 @@ public class ContractGen {
         StringBuilder stats_str = new StringBuilder();
         stats_str.append("name,traningTotal,evalTotal,trueNegative,falseNegative,truePositive,falsePositive,precision,sensitivity,accuracy\n");
         StringBuilder raw_stats = new StringBuilder();
-        raw_stats.append(name).append(",").append(contract.getTotal() / 2).append(",").append(results.size() / 2).append(",");
-        raw_stats.append(true_negative / 2).append(",").append(false_negative / 2).append(",").append(true_positive / 2).append(",").append(false_positive / 2).append(",");
+        raw_stats.append(name).append(",").append(contract.getTotal()).append(",").append(results.size()).append(",");
+        raw_stats.append(true_negative).append(",").append(false_negative).append(",").append(true_positive).append(",").append(false_positive).append(",");
         raw_stats.append(precision).append(",").append(sensitivity).append(",").append(accuracy).append("\n");
         stats_str.append(raw_stats);
         Files.write(Path.of(path + ".csv"), stats_str.toString().getBytes());

@@ -11,7 +11,7 @@ public interface Extractor {
      * @param PATH                     The simulation path.
      * @param adversaryDistinguishable Whether the adversary was able to distinguish the executions.
      * @param index                    The index of the current testcase
-     * @return The extracted test results.
+     * @return The extracted test result.
      */
-    Pair<TestResult, TestResult> extractResults(String PATH, boolean adversaryDistinguishable, int index);
+    TestResult extractResults(String PATH, boolean adversaryDistinguishable, int index);
 }

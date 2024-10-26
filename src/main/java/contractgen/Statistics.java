@@ -62,7 +62,7 @@ public class Statistics {
                                     Set<RISCV_OBSERVATION_TYPE> allowed_observations) implements Runnable {
         @Override
         public void run() {
-            int STEP_SIZE = 2;
+            int STEP_SIZE = 1;
             RISCVContract reference;
             try {
                 reference = RISCVContract.fromJSON(new FileReader(training));

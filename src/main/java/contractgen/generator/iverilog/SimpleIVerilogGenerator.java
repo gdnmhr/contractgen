@@ -34,9 +34,8 @@ public class SimpleIVerilogGenerator extends Generator {
             System.out.printf("Current progress: %d of %d. Stats: last %d ms, avg %d ms\r", i[0], MARCH.getISA().getTestCases().getTotalNumber(), time, avg[0] / i[0]);
             if (pass == SIMULATION_RESULT.FAIL) {
                 System.out.println(testCase);
-                Pair<TestResult, TestResult> ctx = MARCH.extractCTX(testCase);
-                MARCH.getISA().getContract().add(ctx.left());
-                MARCH.getISA().getContract().add(ctx.right());
+                TestResult ctx = MARCH.extractCTX(testCase);
+                MARCH.getISA().getContract().add(ctx);
                 MARCH.getISA().getContract().update(true);
                 MARCH.compile();
                 System.out.println("New Contract: \n" + MARCH.getISA().getContract().toString());

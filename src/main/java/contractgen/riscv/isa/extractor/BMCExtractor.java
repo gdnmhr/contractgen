@@ -28,15 +28,14 @@ public class BMCExtractor implements Extractor {
     }
 
     @Override
-    public Pair<TestResult, TestResult> extractResults(String PATH, boolean adversaryDistinguishable, int index) {
+    public TestResult extractResults(String PATH, boolean adversaryDistinguishable, int index) {
         VcdFile vcd;
         try {
             vcd = new VcdFile(Files.readString(Path.of(PATH)));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        Set<RISCVObservation> obs1 = new HashSet<>();
-        Set<RISCVObservation> obs2 = new HashSet<>();
+        Set<RISCVObservation> obs = new HashSet<>();
         Wire valid1 = vcd.getTop().getChild("left").getWire("rvfi_valid");
         Wire valid2 = vcd.getTop().getChild("right").getWire("rvfi_valid");
         Wire order1 = vcd.getTop().getChild("left").getWire("rvfi_order");
@@ -48,27 +47,26 @@ public class BMCExtractor implements Extractor {
             if (!valid1.getValueAt(t1).equals("1") || !valid2.getValueAt(t2).equals("1")) {
                 throw new IllegalStateException("both rvfi should be valid.");
             }
-            if (compareInstructions(vcd, t1, t2, obs1, obs2)) {
+            if (compareInstructions(vcd, t1, t2, obs)) {
                 // valid instruction
                 
                 RISCVInstruction instr_1 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("left").getWire("rvfi_insn").getValueAt(t1));
                 RISCVInstruction instr_2 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("right").getWire("rvfi_insn").getValueAt(t2));
 
-                compareRegisters(vcd, t1, t2, instr_1, instr_2, obs1, obs2);
-                compareMemory(vcd, t1, t2, instr_1, instr_2, obs1, obs2);
-                compareBranch(vcd, t1, t2, instr_1, instr_2, obs1, obs2);
+                compareRegisters(vcd, t1, t2, instr_1, instr_2, obs);
+                compareMemory(vcd, t1, t2, instr_1, instr_2, obs);
+                compareBranch(vcd, t1, t2, instr_1, instr_2, obs);
 
                 for (int distance = 1; distance <= 4; distance++) {
-                    compareDependencies(vcd, t1, t2, distance, instr_1, instr_2, obs1, obs2);
+                    compareDependencies(vcd, t1, t2, distance, instr_1, instr_2, obs);
                 }
             }
             expected_order++;
             t1 = order1.getFirstTimeValue(Integer.toBinaryString(expected_order));
             t2 = order2.getFirstTimeValue(Integer.toBinaryString(expected_order));
         }
-        obs1 = obs1.stream().filter(o -> allowed_observations.contains(o.observation())).collect(Collectors.toSet());
-        obs2 = obs2.stream().filter(o -> allowed_observations.contains(o.observation())).collect(Collectors.toSet());
-        return new Pair<>(new RISCVTestResult(obs1, adversaryDistinguishable, index * 2), new RISCVTestResult(obs2, adversaryDistinguishable, (index * 2) + 1));
+        obs = obs.stream().filter(o -> allowed_observations.contains(o.observation())).collect(Collectors.toSet());
+        return new RISCVTestResult(obs, adversaryDistinguishable, index);
 
     }
 
@@ -82,7 +80,7 @@ public class BMCExtractor implements Extractor {
      * @param obs1     the current set of observations for execution one.
      * @param obs2     the current set of observations for execution two.
      */
-    private void compareDependencies(VcdFile vcd, Integer t1, Integer t2, int distance, RISCVInstruction instr_1, RISCVInstruction instr_2, Set<RISCVObservation> obs1, Set<RISCVObservation> obs2) {
+    private void compareDependencies(VcdFile vcd, Integer t1, Integer t2, int distance, RISCVInstruction instr_1, RISCVInstruction instr_2, Set<RISCVObservation> obs) {
         try {
             // TODO when applicable
             Integer prev_t1 = t1;
@@ -95,28 +93,66 @@ public class BMCExtractor implements Extractor {
             RISCVInstruction previous_instr_2 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("right").getWire("rvfi_insn").getValueAt(prev_t2));
 
             if ((instr_1.hasRS1() && instr_2.hasRS1()) && (previous_instr_1.hasRD() && previous_instr_2.hasRD()) && Objects.equals(instr_1.rs1(), previous_instr_1.rd()) && !Objects.equals(instr_2.rs1(), previous_instr_2.rd())) {
-                obs1.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
-                obs2.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
+                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
+                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
             }
             if ((instr_1.hasRS1() && instr_2.hasRS1()) && (previous_instr_1.hasRD() && previous_instr_2.hasRD()) && !Objects.equals(instr_1.rs1(), previous_instr_1.rd()) && Objects.equals(instr_2.rs1(), previous_instr_2.rd())) {
-                obs1.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
-                obs2.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
+                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
+                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
             }
+            if ((instr_1.hasRS1() && !instr_2.hasRS1()) && (previous_instr_1.hasRD()) && Objects.equals(instr_1.rs1(), previous_instr_1.rd())) {
+                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
+            }
+            if ((!instr_1.hasRS1() && instr_2.hasRS1()) && (previous_instr_2.hasRD()) && Objects.equals(instr_2.rs1(), previous_instr_2.rd())) {
+                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
+            }
+            if ((previous_instr_1.hasRD() && !previous_instr_2.hasRD()) && (instr_1.hasRS1()) && Objects.equals(instr_1.rs1(), previous_instr_1.rd())) {
+                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
+            }
+            if ((!previous_instr_1.hasRD() && previous_instr_2.hasRD()) && (instr_2.hasRS1()) && Objects.equals(instr_2.rs1(), previous_instr_2.rd())) {
+                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
+            }
+            
             if ((instr_1.hasRS2() && instr_2.hasRS2()) && (previous_instr_1.hasRD() && previous_instr_2.hasRD()) && Objects.equals(instr_1.rs2(), previous_instr_1.rd()) && !Objects.equals(instr_2.rs2(), previous_instr_2.rd())) {
-                obs1.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
-                obs2.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
+                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
+                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
             }
             if ((instr_1.hasRS2() && instr_2.hasRS2()) && (previous_instr_1.hasRD() && previous_instr_2.hasRD()) && !Objects.equals(instr_1.rs2(), previous_instr_1.rd()) && Objects.equals(instr_2.rs2(), previous_instr_2.rd())) {
-                obs1.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
-                obs2.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
+                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
+                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
             }
+            if ((instr_1.hasRS2() && !instr_2.hasRS2()) && (previous_instr_1.hasRD()) && Objects.equals(instr_1.rs2(), previous_instr_1.rd())) {
+                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
+            }
+            if ((!instr_1.hasRS2() && instr_2.hasRS2()) && (previous_instr_2.hasRD()) && Objects.equals(instr_2.rs2(), previous_instr_2.rd())) {
+                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
+            }
+            if ((previous_instr_1.hasRD() && !previous_instr_2.hasRD()) && (instr_1.hasRS2()) && Objects.equals(instr_1.rs2(), previous_instr_1.rd())) {
+                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
+            }
+            if ((!previous_instr_1.hasRD() && previous_instr_2.hasRD()) && (instr_2.hasRS2()) && Objects.equals(instr_2.rs2(), previous_instr_2.rd())) {
+                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
+            }
+
             if ((instr_1.hasRD() && instr_2.hasRD()) && (previous_instr_1.hasRD() && previous_instr_2.hasRD()) && Objects.equals(instr_1.rd(), previous_instr_1.rd()) && !Objects.equals(instr_2.rd(), previous_instr_2.rd())) {
-                obs1.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
-                obs2.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
+                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
+                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
             }
             if ((instr_1.hasRD() && instr_2.hasRD()) && (previous_instr_1.hasRD() && previous_instr_2.hasRD()) && !Objects.equals(instr_1.rd(), previous_instr_1.rd()) && Objects.equals(instr_2.rd(), previous_instr_2.rd())) {
-                obs1.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
-                obs2.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
+                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
+                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
+            }
+            if ((instr_1.hasRD() && !instr_2.hasRD()) && (previous_instr_1.hasRD()) && Objects.equals(instr_1.rd(), previous_instr_1.rd())) {
+                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
+            }
+            if ((!instr_1.hasRD() && instr_2.hasRD()) && (previous_instr_2.hasRD()) && Objects.equals(instr_2.rd(), previous_instr_2.rd())) {
+                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
+            }
+            if ((previous_instr_1.hasRD() && !previous_instr_2.hasRD()) && (instr_1.hasRD()) && Objects.equals(instr_1.rd(), previous_instr_1.rd())) {
+                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
+            }
+            if ((!previous_instr_1.hasRD() && previous_instr_2.hasRD()) && (instr_2.hasRD()) && Objects.equals(instr_2.rd(), previous_instr_2.rd())) {
+                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
             }
         } catch (Exception ignored) {
 
@@ -132,7 +168,7 @@ public class BMCExtractor implements Extractor {
      * @param obs1    the current set of observations for execution one.
      * @param obs2    the current set of observations for execution two.
      */
-    private void compareBranch(VcdFile vcd, Integer t1, Integer t2, RISCVInstruction instr_1, RISCVInstruction instr_2, Set<RISCVObservation> obs1, Set<RISCVObservation> obs2) {
+    private void compareBranch(VcdFile vcd, Integer t1, Integer t2, RISCVInstruction instr_1, RISCVInstruction instr_2, Set<RISCVObservation> obs) {
         Module left = vcd.getTop().getChild("left");
         Module right = vcd.getTop().getChild("right");
         Boolean is_branch_1 = instr_1.isBRANCH() || instr_1.isJUMP();
@@ -143,16 +179,36 @@ public class BMCExtractor implements Extractor {
         String new_pc_2 = right.getWire("rvfi_pc_wdata").getValueAt(t2);
 
         if ((instr_1.isCONTROL() && instr_2.isCONTROL()) && !Objects.equals(is_branch_1, is_branch_2)) {
-            obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.IS_BRANCH));
-            obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.IS_BRANCH));
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.IS_BRANCH));
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.IS_BRANCH));
         }
+        if ((instr_1.isCONTROL() && !instr_2.isCONTROL())) {
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.IS_BRANCH));
+        }
+        if ((!instr_1.isCONTROL() && instr_2.isCONTROL())) {
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.IS_BRANCH));
+        }
+
         if ((instr_1.isCONTROL() && instr_2.isCONTROL()) && !Objects.equals(branch_taken_1, branch_taken_2)) {
-            obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.BRANCH_TAKEN));
-            obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.BRANCH_TAKEN));
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.BRANCH_TAKEN));
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.BRANCH_TAKEN));
         }
+        if ((instr_1.isCONTROL() && !instr_2.isCONTROL())) {
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.BRANCH_TAKEN));
+        }
+        if ((!instr_1.isCONTROL() && instr_2.isCONTROL())) {
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.BRANCH_TAKEN));
+        }
+
         if ((instr_1.isCONTROL() && instr_2.isCONTROL()) && !Objects.equals(new_pc_1, new_pc_2)) {
-            obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.NEW_PC));
-            obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.NEW_PC));
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.NEW_PC));
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.NEW_PC));
+        }
+        if ((instr_1.isCONTROL() && !instr_2.isCONTROL())) {
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.NEW_PC));
+        }
+        if ((!instr_1.isCONTROL() && instr_2.isCONTROL())) {
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.NEW_PC));
         }
     }
 
@@ -165,7 +221,7 @@ public class BMCExtractor implements Extractor {
      * @param obs1    the current set of observations for execution one.
      * @param obs2    the current set of observations for execution two.
      */
-    private void compareMemory(VcdFile vcd, Integer t1, Integer t2, RISCVInstruction instr_1, RISCVInstruction instr_2, Set<RISCVObservation> obs1, Set<RISCVObservation> obs2) {
+    private void compareMemory(VcdFile vcd, Integer t1, Integer t2, RISCVInstruction instr_1, RISCVInstruction instr_2, Set<RISCVObservation> obs) {
         Module left = vcd.getTop().getChild("left");
         Module right = vcd.getTop().getChild("right");
         String mem_addr_1 = left.getWire("rvfi_mem_addr").getValueAt(t1);
@@ -180,24 +236,58 @@ public class BMCExtractor implements Extractor {
         Boolean is_half_aligned_2 = !(Long.parseLong(mem_addr_2, 2) % 4 == 3);
 
         if ((instr_1.isMEM() && instr_2.isMEM()) && !Objects.equals(mem_addr_1, mem_addr_2)) {
-            obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.MEM_ADDR));
-            obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.MEM_ADDR));
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.MEM_ADDR));
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.MEM_ADDR));
         }
+        if ((instr_1.isMEM() && !instr_2.isMEM())) {
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.MEM_ADDR));
+        }
+        if ((!instr_1.isMEM() && instr_2.isMEM())) {
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.MEM_ADDR));
+        }
+
         if ((instr_1.isLOAD() && instr_2.isLOAD()) && !Objects.equals(mem_r_data_1, mem_r_data_2)) {
-            obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.MEM_R_DATA));
-            obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.MEM_R_DATA));
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.MEM_R_DATA));
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.MEM_R_DATA));
         }
+        if ((instr_1.isLOAD() && !instr_2.isLOAD())) {
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.MEM_R_DATA));
+        }
+        if ((!instr_1.isLOAD() && instr_2.isLOAD())) {
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.MEM_R_DATA));
+        }
+
         if ((instr_1.isSTORE() && instr_2.isSTORE()) && !Objects.equals(mem_w_data_1, mem_w_data_2)) {
-            obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.MEM_W_DATA));
-            obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.MEM_W_DATA));
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.MEM_W_DATA));
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.MEM_W_DATA));
         }
+        if ((instr_1.isSTORE() && !instr_2.isSTORE())) {
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.MEM_W_DATA));
+        }
+        if ((!instr_1.isSTORE() && instr_2.isSTORE())) {
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.MEM_W_DATA));
+        }
+
         if ((instr_1.isMEM() && instr_2.isMEM()) && !Objects.equals(is_aligned_1, is_aligned_2)) {
-            obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.IS_ALIGNED));
-            obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.IS_ALIGNED));
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.IS_ALIGNED));
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.IS_ALIGNED));
         }
+        if ((instr_1.isMEM() && !instr_2.isMEM())) {
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.IS_ALIGNED));
+        }
+        if ((!instr_1.isMEM() && instr_2.isMEM())) {
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.IS_ALIGNED));
+        }
+
         if ((instr_1.isMEM() && instr_2.isMEM()) && !Objects.equals(is_half_aligned_1, is_half_aligned_2)) {
-            obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.IS_HALF_ALIGNED));
-            obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.IS_HALF_ALIGNED));
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.IS_HALF_ALIGNED));
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.IS_HALF_ALIGNED));
+        }
+        if ((instr_1.isMEM() && !instr_2.isMEM())) {
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.IS_HALF_ALIGNED));
+        }
+        if ((!instr_1.isMEM() && instr_2.isMEM())) {
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.IS_HALF_ALIGNED));
         }
     }
 
@@ -210,7 +300,7 @@ public class BMCExtractor implements Extractor {
      * @param obs1    the current set of observations for execution one.
      * @param obs2    the current set of observations for execution two.
      */
-    private void compareRegisters(VcdFile vcd, Integer t1, Integer t2, RISCVInstruction instr_1, RISCVInstruction instr_2, Set<RISCVObservation> obs1, Set<RISCVObservation> obs2) {
+    private void compareRegisters(VcdFile vcd, Integer t1, Integer t2, RISCVInstruction instr_1, RISCVInstruction instr_2, Set<RISCVObservation> obs) {
         Module left = vcd.getTop().getChild("left");
         Module right = vcd.getTop().getChild("right");
         String reg_rs1_1 = left.getWire("rvfi_rs1_rdata").getValueAt(t1);
@@ -221,16 +311,36 @@ public class BMCExtractor implements Extractor {
         String reg_rd_2 = right.getWire("rvfi_rd_wdata").getValueAt(t2);
 
         if ((instr_1.hasRS1() && instr_2.hasRS1()) && !Objects.equals(reg_rs1_1, reg_rs1_2)) {
-            obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.REG_RS1));
-            obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RS1));
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.REG_RS1));
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RS1));
         }
+        if ((instr_1.hasRS1() && !instr_2.hasRS1())) {
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.REG_RS1));
+        }
+        if ((!instr_1.hasRS1() && instr_2.hasRS1())) {
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RS1));
+        }
+
         if ((instr_1.hasRS2() && instr_2.hasRS2()) && !Objects.equals(reg_rs2_1, reg_rs2_2)) {
-            obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.REG_RS2));
-            obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RS2));
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.REG_RS2));
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RS2));
         }
+        if ((instr_1.hasRS2() && !instr_2.hasRS2())) {
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.REG_RS2));
+        }
+        if ((!instr_1.hasRS2() && instr_2.hasRS2())) {
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RS2));
+        }
+
         if ((instr_1.hasRD() && instr_2.hasRD()) && !Objects.equals(reg_rd_1, reg_rd_2)) {
-            obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.REG_RD));
-            obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RD));
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.REG_RD));
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RD));
+        }
+        if ((instr_1.hasRD() && !instr_2.hasRD())) {
+            obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.REG_RD));
+        }
+        if ((!instr_1.hasRD() && instr_2.hasRD())) {
+            obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RD));
         }
     }
 
@@ -242,7 +352,7 @@ public class BMCExtractor implements Extractor {
      * @param obs2 the current set of observations for execution two.
      * @return whether any error occurred.
      */
-    private boolean compareInstructions(VcdFile vcd, Integer t1, Integer t2, Set<RISCVObservation> obs1, Set<RISCVObservation> obs2) {
+    private boolean compareInstructions(VcdFile vcd, Integer t1, Integer t2, Set<RISCVObservation> obs) {
         RISCVInstruction instr_1;
         RISCVInstruction instr_2;
         try {
@@ -255,40 +365,64 @@ public class BMCExtractor implements Extractor {
             //}
 
             if (!Objects.equals(instr_1.type().getFormat(), instr_2.type().getFormat())) {
-                obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.FORMAT));
-                obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.FORMAT));
+                obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.FORMAT));
+                obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.FORMAT));
             }
 
             if (!Objects.equals(instr_1.type().getOpcode(), instr_2.type().getOpcode())) {
-                obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.OPCODE));
-                obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.OPCODE));
+                obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.OPCODE));
+                obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.OPCODE));
             }
 
-            if ((instr_1.type().hasFunct3() && instr_2.type().hasFunct3()) && !Objects.equals(instr_1.type().getFunct3(), instr_2.type().getFunct3())) {
-                obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.FUNCT3));
-                obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.FUNCT3));
+            if (!Objects.equals(instr_1.type().getFunct3(), instr_2.type().getFunct3())) {
+                if (instr_1.type().hasFunct3()) {
+                    obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.FUNCT3));
+                }
+                if (instr_2.type().hasFunct3()) {
+                    obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.FUNCT3));
+                }
             }
 
-            if ((instr_1.type().hasFunct7() && instr_2.type().hasFunct7()) && !Objects.equals(instr_1.type().getFunct7(), instr_2.type().getFunct7())) {
-                obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.FUNCT7));
-                obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.FUNCT7));
+            if (!Objects.equals(instr_1.type().getFunct7(), instr_2.type().getFunct7())) {
+                if (instr_1.type().hasFunct7()) {
+                    obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.FUNCT7));
+                }
+                if (instr_2.type().hasFunct7()) {
+                    obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.FUNCT7));
+                }
             }
 
-            if ((instr_1.hasRD() && instr_2.hasRD()) && !Objects.equals(instr_1.rd(), instr_2.rd())) {
-                obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.RD));
-                obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.RD));
+            if (!Objects.equals(instr_1.rd(), instr_2.rd())) {
+                if (instr_1.hasRD()) {
+                    obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.RD));
+                }
+                if (instr_2.hasRD()) {
+                    obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.RD));
+                }
             }
-            if ((instr_1.hasRS1() && instr_2.hasRS1()) && !Objects.equals(instr_1.rs1(), instr_2.rs1())) {
-                obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.RS1));
-                obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.RS1));
+            if (!Objects.equals(instr_1.rs1(), instr_2.rs1())) {
+                if (instr_1.hasRS1()) {
+                    obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.RS1));
+                }
+                if (instr_2.hasRS1()) {
+                    obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.RS1));
+                }
             }
-            if ((instr_1.hasRS2() && instr_2.hasRS2()) && !Objects.equals(instr_1.rs2(), instr_2.rs2())) {
-                obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.RS2));
-                obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.RS2));
+            if (!Objects.equals(instr_1.rs2(), instr_2.rs2())) {
+                if (instr_1.hasRS2()) {
+                    obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.RS2));
+                }
+                if (instr_2.hasRS2()) {
+                    obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.RS2));
+                }
             }
-            if ((instr_1.hasIMM() && instr_2.hasIMM()) && !Objects.equals(instr_1.imm(), instr_2.imm())) {
-                obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.IMM));
-                obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.IMM));
+            if (!Objects.equals(instr_1.imm(), instr_2.imm())) {
+                if (instr_1.hasIMM()) {
+                    obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.IMM));
+                }
+                if (instr_2.hasIMM()) {
+                    obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.IMM));
+                }
             }
             return true;
         } catch (Exception e) {

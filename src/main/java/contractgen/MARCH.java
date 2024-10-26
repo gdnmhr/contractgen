@@ -74,35 +74,35 @@ public abstract class MARCH {
      * Extracts the results from a failing test case.
      *
      * @param testCase The test case that failed for further reference.
-     * @return A pair of test results, one for each core, including observations that would allow to distinguish the executions.
+     * @return The result including observations that would allow to distinguish the executions.
      */
-    public abstract Pair<TestResult, TestResult> extractCTX(TestCase testCase);
+    public abstract TestResult extractCTX(TestCase testCase);
 
     /**
      * Extracts the results from a failing test case.
      *
      * @param id       The id of the current thread to avoid filesystem conflicts.
      * @param testCase The test case that failed for further reference.
-     * @return A pair of test results, one for each core, including observations that would allow to distinguish the executions.
+     * @return The result including observations that would allow to distinguish the executions.
      */
-    public abstract Pair<TestResult, TestResult> extractCTX(int id, TestCase testCase);
+    public abstract TestResult extractCTX(int id, TestCase testCase);
 
     /**
      * Extracts the differences from the VCD file on disk.
      *
      * @param index Index of the test case to allow to associate a test case with this result.
-     * @return A pair of test results, one for each core, including observations that would allow to distinguish the executions.
+     * @return The result including observations that would allow to distinguish the executions.
      */
-    public abstract Pair<TestResult, TestResult> extractDifferences(int index);
+    public abstract TestResult extractDifferences(int index);
 
     /**
      * Extracts the differences from the VCD file on disk.
      *
      * @param id    The id of the current thread to avoid filesystem conflicts.
      * @param index Index of the test case to allow to associate a test case with this result.
-     * @return A pair of test results, one for each core, including observations that would allow to distinguish the executions.
+     * @return The result including observations that would allow to distinguish the executions.
      */
-    public abstract Pair<TestResult, TestResult> extractDifferences(int id, int index);
+    public abstract TestResult extractDifferences(int id, int index);
 
     /**
      * Compiles the microarchitecture for simulation.
