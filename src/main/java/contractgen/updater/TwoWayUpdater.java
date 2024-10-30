@@ -19,9 +19,9 @@ public class TwoWayUpdater implements Updater {
     public Set<Observation> update(List<TestResult> testResults, Set<Observation> ignored) {
         Set<Observation> new_contract;
         Set<Observation> negative = new HashSet<>();
-        testResults.stream().filter(TestResult::isAdversaryDistinguishable).forEach(ctx -> negative.addAll(ctx.getPossibleObservations()));
+        testResults.stream().filter(TestResult::isAdversaryDistinguishable).forEach(ctx -> negative.addAll(ctx.getDistinguishingObservations()));
         List<Observation> positive = new ArrayList<>();
-        testResults.stream().filter(TestResult::isAdversaryDistinguishable).forEach(pe -> positive.addAll(pe.getPossibleObservations()));
+        testResults.stream().filter(TestResult::isAdversaryDistinguishable).forEach(pe -> positive.addAll(pe.getDistinguishingObservations()));
         Map<Observation, Long> values = toMap(positive);
         List<Observation> sorted_obs = negative.stream().sorted(Comparator.comparingInt(a -> Math.toIntExact(values.getOrDefault(a, 0L)))).toList();
         new_contract = new HashSet<>();

@@ -1,6 +1,7 @@
 package contractgen.simple.isa.contract;
 
 import contractgen.Observation;
+import contractgen.Type;
 import contractgen.simple.isa.SIMPLE_TYPE;
 
 /**
@@ -13,6 +14,14 @@ public record SimpleObservation(SIMPLE_TYPE type, SIMPLE_OBSERVATION_TYPE observ
 
     public int getValue() {
         return observation.value;
+    }
+
+    public Type getType() {
+        return null;
+    }
+
+    public boolean matchExceptType(Observation observation) {
+        return observation instanceof SimpleObservation && ((SimpleObservation) observation).observation == this.observation;
     }
 
     @Override

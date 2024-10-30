@@ -262,8 +262,9 @@ class Falsify implements Callable<Integer> {
     public Integer call() {
        try {
             RISCVContract ctr = RISCVContract.fromJSON(new FileReader(contract));
-            ctr.update(true);
+            // ctr.update(true); do not update the contract, use the one from the json.
             out.toFile().mkdirs();
+            System.out.println(ctr.getCurrentContract());
             Files.write(out.resolve("contract.txt"), ctr.toString().getBytes());
             TestCases tc = new RISCVIterativeTests(isa, RISCV_OBSERVATION_TYPE.getGroups(template), seed, threads, number);
             Generator generator = new Falsifier(processor == CONFIG.PROCESSOR.IBEX ? new IBEX(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template)) : new CVA6(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template)), threads, ctr, out);

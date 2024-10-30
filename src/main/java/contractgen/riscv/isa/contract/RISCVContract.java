@@ -7,6 +7,7 @@ import contractgen.Observation;
 import contractgen.Updater;
 import contractgen.riscv.isa.RISCV_TYPE;
 import contractgen.updater.ILPUpdater;
+import contractgen.util.Pair;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -48,10 +49,10 @@ public class RISCVContract extends Contract {
         List<TestResult> filtered_res = new ArrayList<>(this.getTestResults().size());
         getTestResults().forEach(res -> {
                     Set<RISCVObservation> filered_obs = new HashSet<>();
-                    res.getPossibleObservations().forEach(obs -> {
+                    res.getDistinguishingObservations().forEach(obs -> {
                         if (obs.isApplicable()) filered_obs.add((RISCVObservation) obs);
                     });
-                    filtered_res.add(new RISCVTestResult(filered_obs, res.isAdversaryDistinguishable(), res.getIndex()));
+                    filtered_res.add(new RISCVTestResult(filered_obs, res.getDistinguishingInstructions().stream().map(p -> new Pair<>((RISCV_TYPE) p.left(), (RISCV_TYPE) p.right())).collect(Collectors.toSet()), res.isAdversaryDistinguishable(), res.getIndex()));
                 }
         );
         return new RISCVContract(filtered_res, this.updater);
@@ -122,6 +123,7 @@ public class RISCVContract extends Contract {
         builder.registerTypeAdapter(TestResult.class, new TestResultDeserializer());
         builder.registerTypeAdapter(Observation.class, new ObservationDeserializer());
         builder.registerTypeAdapter(Updater.class, new UpdaterDeserializer());
+        builder.registerTypeAdapter(Pair.class, new PairDeserializer<contractgen.Type,contractgen.Type>(contractgen.Type.class, contractgen.Type.class));
         builder.setPrettyPrinting();
         Gson gson = builder.create();
         return gson.fromJson(file, RISCVContract.class);
@@ -141,8 +143,10 @@ public class RISCVContract extends Contract {
             JsonArray jsonPossibilities = jsonObject.get("observations").getAsJsonArray();
             boolean adversaryDistinguishable = jsonObject.get("adversaryDistinguishable").getAsBoolean();
             int index = jsonObject.has("index") ? jsonObject.get("index").getAsInt() : 0;
+            JsonArray jsonDistinguishingInstructions = jsonObject.has("distinguishingInstructions") ? jsonObject.get("distinguishingInstructions").getAsJsonArray() : new JsonArray();
             Set<RISCVObservation> possibilities = jsonPossibilities.asList().stream().map(jsonE -> gson.fromJson(jsonE, RISCVObservation.class)).collect(Collectors.toSet());
-            return new RISCVTestResult(possibilities, adversaryDistinguishable, index);
+            Set<Pair<RISCV_TYPE, RISCV_TYPE>> distinguishingInstructions = jsonDistinguishingInstructions.asList().stream().map(jsonE -> gson.fromJson(jsonE, Pair.class)).collect(Collectors.toSet());
+            return new RISCVTestResult(possibilities, distinguishingInstructions, adversaryDistinguishable, index);
         }
     }
 
@@ -175,6 +179,29 @@ public class RISCVContract extends Contract {
         }
     }
 
+    public static class PairDeserializer<T,U> implements JsonDeserializer<Pair<T, U>> {
+        private final Class<T> classOfT;
+        private final Class<U> classOfU;
+    
+        public PairDeserializer(Class<T> classOfT, Class<U> classOfU) {
+            this.classOfT = classOfT;
+            this.classOfU = classOfU;
+        }
+
+        @Override
+        public Pair<T, U> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException {
+            JsonObject jsonObject = json.getAsJsonObject();
+            GsonBuilder builder = new GsonBuilder();
+            builder.setPrettyPrinting();
+            Gson gson = builder.create();
+            JsonElement jsonLeft = jsonObject.get("left");
+            JsonElement jsonRight = jsonObject.get("right");
+            return new Pair<T, U>(gson.fromJson(jsonLeft, classOfT), gson.fromJson(jsonRight, classOfU));
+        }
+
+    }
+
     /**
      * @return A contract that leaks the instructions, branches, multiplication operands and memory addresses.
      */
@@ -182,31 +209,31 @@ public class RISCVContract extends Contract {
         List<TestResult> results = new ArrayList<>();
         int i = 0;
         for (RISCV_TYPE type : RISCV_TYPE.values()) {
-            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.NEW_PC)), true, i++));
+            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.NEW_PC)), Set.of(), true, i++));
         }
         for (RISCV_TYPE type : RISCV_TYPE.values()) {
-            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.BRANCH_TAKEN)), true, i++));
+            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.BRANCH_TAKEN)), Set.of(), true, i++));
         }
         for (RISCV_TYPE type : RISCV_TYPE.values()) {
-            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.MEM_ADDR)), true, i++));
+            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.MEM_ADDR)), Set.of(), true, i++));
         }
         for (RISCV_TYPE type : RISCV_TYPE.values()) {
-            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RAW_RS1_1)), true, i++));
-            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RAW_RS1_2)), true, i++));
-            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RAW_RS1_3)), true, i++));
-            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RAW_RS1_4)), true, i++));
-            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RAW_RS2_1)), true, i++));
-            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RAW_RS2_2)), true, i++));
-            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RAW_RS2_3)), true, i++));
-            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RAW_RS2_4)), true, i++));
-            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.WAW_1)), true, i++));
-            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.WAW_2)), true, i++));
-            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.WAW_3)), true, i++));
-            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.WAW_4)), true, i++));
+            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RAW_RS1_1)), Set.of(), true, i++));
+            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RAW_RS1_2)), Set.of(), true, i++));
+            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RAW_RS1_3)), Set.of(), true, i++));
+            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RAW_RS1_4)), Set.of(), true, i++));
+            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RAW_RS2_1)), Set.of(), true, i++));
+            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RAW_RS2_2)), Set.of(), true, i++));
+            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RAW_RS2_3)), Set.of(), true, i++));
+            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RAW_RS2_4)), Set.of(), true, i++));
+            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.WAW_1)), Set.of(), true, i++));
+            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.WAW_2)), Set.of(), true, i++));
+            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.WAW_3)), Set.of(), true, i++));
+            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.WAW_4)), Set.of(), true, i++));
         }
         for (RISCV_TYPE type : Set.of(RISCV_TYPE.MUL, RISCV_TYPE.MULH, RISCV_TYPE.MULHU, RISCV_TYPE.MULHSU, RISCV_TYPE.DIV, RISCV_TYPE.DIVU, RISCV_TYPE.REM, RISCV_TYPE.REMU)) {
-            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.REG_RS1)), true, i++));
-            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.REG_RS2)), true, i++));
+            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.REG_RS1)), Set.of(), true, i++));
+            results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.REG_RS2)), Set.of(), true, i++));
         }
         return new RISCVContract(results, new ILPUpdater());
     }

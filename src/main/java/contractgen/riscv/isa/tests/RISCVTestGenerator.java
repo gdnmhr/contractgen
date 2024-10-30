@@ -132,7 +132,7 @@ public class RISCVTestGenerator {
                     cases.add(new RISCVTestCase(
                             new RISCVProgram(registers, Stream.concat(prefix.left().stream(), suffix.stream()).toList()),
                             new RISCVProgram(registers, Stream.concat(prefix.right().stream(), suffix.stream()).toList()),
-                            Integer.max(prefix.left().size() + suffix.size(), prefix.right().size() + suffix.size()), new RISCVTestResult(Set.of(new RISCVObservation(type, observation)), true, index), index++));
+                            Integer.max(prefix.left().size() + suffix.size(), prefix.right().size() + suffix.size()), new RISCVTestResult(Set.of(new RISCVObservation(type, observation)), Set.of(), true, index), index++));
                 }
             }
         }

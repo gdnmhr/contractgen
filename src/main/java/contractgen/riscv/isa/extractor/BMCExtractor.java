@@ -3,6 +3,7 @@ package contractgen.riscv.isa.extractor;
 import contractgen.Extractor;
 import contractgen.TestResult;
 import contractgen.riscv.isa.RISCVInstruction;
+import contractgen.riscv.isa.RISCV_TYPE;
 import contractgen.riscv.isa.contract.RISCVObservation;
 import contractgen.riscv.isa.contract.RISCVTestResult;
 import contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE;
@@ -36,6 +37,7 @@ public class BMCExtractor implements Extractor {
             throw new RuntimeException(e);
         }
         Set<RISCVObservation> obs = new HashSet<>();
+        Set<Pair<RISCV_TYPE, RISCV_TYPE>> distinguishingInstructions = new HashSet<>();
         Wire valid1 = vcd.getTop().getChild("left").getWire("rvfi_valid");
         Wire valid2 = vcd.getTop().getChild("right").getWire("rvfi_valid");
         Wire order1 = vcd.getTop().getChild("left").getWire("rvfi_order");
@@ -47,7 +49,7 @@ public class BMCExtractor implements Extractor {
             if (!valid1.getValueAt(t1).equals("1") || !valid2.getValueAt(t2).equals("1")) {
                 throw new IllegalStateException("both rvfi should be valid.");
             }
-            if (compareInstructions(vcd, t1, t2, obs)) {
+            if (compareInstructions(vcd, t1, t2, obs, distinguishingInstructions)) {
                 // valid instruction
                 
                 RISCVInstruction instr_1 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("left").getWire("rvfi_insn").getValueAt(t1));
@@ -66,7 +68,7 @@ public class BMCExtractor implements Extractor {
             t2 = order2.getFirstTimeValue(Integer.toBinaryString(expected_order));
         }
         obs = obs.stream().filter(o -> allowed_observations.contains(o.observation())).collect(Collectors.toSet());
-        return new RISCVTestResult(obs, adversaryDistinguishable, index);
+        return new RISCVTestResult(obs, distinguishingInstructions, adversaryDistinguishable, index);
 
     }
 
@@ -352,17 +354,16 @@ public class BMCExtractor implements Extractor {
      * @param obs2 the current set of observations for execution two.
      * @return whether any error occurred.
      */
-    private boolean compareInstructions(VcdFile vcd, Integer t1, Integer t2, Set<RISCVObservation> obs) {
+    private boolean compareInstructions(VcdFile vcd, Integer t1, Integer t2, Set<RISCVObservation> obs, Set<Pair<RISCV_TYPE, RISCV_TYPE>> distinguishingInstructions) {
         RISCVInstruction instr_1;
         RISCVInstruction instr_2;
         try {
             instr_1 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("left").getWire("rvfi_insn").getValueAt(t1));
             instr_2 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("right").getWire("rvfi_insn").getValueAt(t2));
 
-            //if (!Objects.equals(instr_1.type(), instr_2.type())) {
-            //    obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.OPCODE));
-            //    obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.OPCODE));
-            //}
+            if (!Objects.equals(instr_1.type(), instr_2.type())) {
+                distinguishingInstructions.add(new Pair<RISCV_TYPE, RISCV_TYPE>(instr_1.type(), instr_2.type()));
+            }
 
             if (!Objects.equals(instr_1.type().getFormat(), instr_2.type().getFormat())) {
                 obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.FORMAT));

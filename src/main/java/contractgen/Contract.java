@@ -3,6 +3,8 @@ package contractgen;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import contractgen.util.Pair;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
@@ -96,7 +98,20 @@ public abstract class Contract {
      * @return Whether the given contract covers the given result.
      */
     public static boolean covers(Set<Observation> contract, TestResult res) {
-        return contract.stream().anyMatch(obs -> res.getPossibleObservations().contains(obs));
+        for (Pair<Type, Type> distinguishingTypes: res.getDistinguishingInstructions()) {
+            Set<Observation> obs_left = contract.stream().filter(o -> o.getType().equals(distinguishingTypes.left())).collect(Collectors.toSet());
+            Set<Observation> obs_right = contract.stream().filter(o -> o.getType().equals(distinguishingTypes.right())).collect(Collectors.toSet());
+            // if the number of observations for left and right type is different, the contract does always cover this
+            if (obs_left.size() != obs_right.size()) {
+                return true;
+            }
+            // check if there is a matching observation for left and right type, size is the same, so we can do it either way
+
+            if (!obs_left.stream().allMatch(ol -> obs_right.stream().anyMatch(or -> ol.matchExceptType(or)))) {
+                return true;
+            }
+        }
+        return contract.stream().anyMatch(obs -> res.getDistinguishingObservations().contains(obs));
     }
 
     /**
@@ -104,15 +119,29 @@ public abstract class Contract {
      * @param res      The test result to be checked.
      * @return Whether the given contract covers the given result.
      */
-    public static Set<Observation> whyCovers(Set<Observation> contract, TestResult res) {
-        return contract.stream().filter(obs -> res.getPossibleObservations().contains(obs)).collect(Collectors.toSet());
+    public static Pair<Set<Observation>, Set<Pair<Type, Type>>> whyCovers(Set<Observation> contract, TestResult res) {
+        Set<Pair<Type, Type>> distinguishingTypes = new HashSet<>();
+        for (Pair<Type, Type> distinguishingType : res.getDistinguishingInstructions()) {
+            Set<Observation> obs_left = contract.stream().filter(o -> o.getType().equals(distinguishingType.left())).collect(Collectors.toSet());
+            Set<Observation> obs_right = contract.stream().filter(o -> o.getType().equals(distinguishingType.right())).collect(Collectors.toSet());
+            // if the number of observations for left and right type is different, the contract does always cover this
+            if (obs_left.size() != obs_right.size()) {
+                distinguishingTypes.add(distinguishingType);
+            }
+            // check if there is a matching observation for left and right type, size is the same, so we can do it either way
+            if (!obs_left.stream().allMatch(ol -> obs_right.stream().anyMatch(or -> ol.matchExceptType(or)))) {
+                distinguishingTypes.add(distinguishingType);
+            }
+        }
+        Set<Observation> distinguishingAtoms = contract.stream().filter(obs -> res.getDistinguishingObservations().contains(obs)).collect(Collectors.toSet());
+        return new Pair<Set<Observation>,Set<Pair<Type,Type>>>(distinguishingAtoms, distinguishingTypes);
     }
 
     /**
      * @param res The test result to be checked.
      * @return Whether the given contract covers the given result.
      */
-    public Set<Observation> whyCovers(TestResult res) {
+    public Pair<Set<Observation>, Set<Pair<Type, Type>>> whyCovers(TestResult res) {
         return whyCovers(this.current_contract, res);
     }
 
@@ -203,9 +232,9 @@ public abstract class Contract {
     public String getTotalStats() {
         StringBuilder sb = new StringBuilder();
         sb.append("TestResults: ").append("\n");
-        sb.append("\tTotal: ").append(getTotal() / 2).append("\n");
-        sb.append("\tDistinguishable: ").append(getDistinguishableCount() / 2).append("\n");
-        sb.append("\tIndistinguishable: ").append(getIndistinguishableCount() / 2).append("\n");
+        sb.append("\tTotal: ").append(getTotal()).append("\n");
+        sb.append("\tDistinguishable: ").append(getDistinguishableCount()).append("\n");
+        sb.append("\tIndistinguishable: ").append(getIndistinguishableCount()).append("\n");
         return sb.toString();
     }
 

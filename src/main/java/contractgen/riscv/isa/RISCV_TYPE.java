@@ -1,10 +1,12 @@
 package contractgen.riscv.isa;
 
+import contractgen.Type;
+
 /**
  * The types of RISC-V instructions.
  */
 @SuppressWarnings("MissingJavadoc")
-public enum RISCV_TYPE {
+public enum RISCV_TYPE implements Type {
     LUI("lui", RISCV_SUBSET.BASE, RISCV_FORMAT.UTYPE, "0110111"),
     AUIPC("aupc", RISCV_SUBSET.BASE, RISCV_FORMAT.UTYPE, "0010111"),
     JAL("jal", RISCV_SUBSET.BASE, RISCV_FORMAT.JTYPE, "1101111"),

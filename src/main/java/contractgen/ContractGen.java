@@ -10,6 +10,7 @@ import static contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE.*;
 
 import contractgen.riscv.isa.tests.RISCVIterativeTests;
 import contractgen.updater.ILPUpdater;
+import contractgen.util.Pair;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -133,6 +134,7 @@ public class ContractGen {
         int false_positive = 0;
         int false_negative = 0;
         Map<Observation, Integer> fp_counter = new HashMap<>();
+        Map<Pair<Type, Type>, Integer> typeCounter = new HashMap<>();
         Set<TestResult> fn_set = new HashSet<>();
         for (TestResult res : results) {
             boolean covered = contract.covers(res);
@@ -145,11 +147,19 @@ public class ContractGen {
                 }
             } else {
                 if (covered) {
-                    Contract.whyCovers(contract.getCurrentContract(), res).forEach(obs -> {
+                    Pair<Set<Observation>, Set<Pair<Type, Type>>> whyCovers = contract.whyCovers(item);
+                    whyCovers.left().forEach(obs -> {
                         if (fp_counter.containsKey(obs)) {
                             fp_counter.put(obs, fp_counter.get(obs) + 1);
                         } else {
                             fp_counter.put(obs, 1);
+                        }
+                    });
+                    whyCovers.right().forEach(pair -> {
+                        if (typeCounter.containsKey(pair)) {
+                            typeCounter.put(pair, typeCounter.get(pair) + 1);
+                        } else {
+                            typeCounter.put(pair, 1);
                         }
                     });
                     false_positive++;
@@ -160,9 +170,10 @@ public class ContractGen {
         System.out.println("Results: true_negative: " + true_negative + ", false_negative: " + false_negative + ", true_positive: " + true_positive + ", false_positive: " + false_positive);
         StringBuilder fp_str = new StringBuilder();
         fp_counter.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).forEach(e -> fp_str.append(e.getValue()).append("\t").append(e.getKey()).append("\n"));
+        typeCounter.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).forEach(e -> fp_str.append(e.getValue()).append("\t").append("(").append(e.getKey().left()).append(",").append(e.getKey().right()).append(")").append("\n"));
         Files.write(Path.of(path + "-false-positives.txt"), fp_str.toString().getBytes());
         StringBuilder fn_str = new StringBuilder();
-        fn_set.forEach(res -> fn_str.append(res.getIndex()).append(":\t").append(res.getPossibleObservations()).append("\n"));
+        fn_set.forEach(res -> fn_str.append(res.getIndex()).append(":\t").append(res.getDistinguishingObservations()).append("\n"));
         Files.write(Path.of(path + "-false-negatives.txt"), fn_str.toString().getBytes());
         double precision = ((double) true_positive) / ((double) true_positive + false_positive);
         double sensitivity = ((double) true_positive) / ((double) true_positive + false_negative);

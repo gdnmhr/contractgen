@@ -1,6 +1,7 @@
 package contractgen.riscv.isa.contract;
 
 import contractgen.Observation;
+import contractgen.Type;
 import contractgen.riscv.isa.RISCVInstruction;
 import contractgen.riscv.isa.RISCV_TYPE;
 
@@ -15,6 +16,16 @@ public record RISCVObservation(RISCV_TYPE type, RISCV_OBSERVATION_TYPE observati
     @Override
     public int getValue() {
         return observation.value;
+    }
+
+    @Override
+    public Type getType() {
+        return type;
+    }
+
+    @Override
+    public boolean matchExceptType(Observation observation) {
+        return observation instanceof RISCVObservation && ((RISCVObservation) observation).observation == this.observation;
     }
 
     @Override

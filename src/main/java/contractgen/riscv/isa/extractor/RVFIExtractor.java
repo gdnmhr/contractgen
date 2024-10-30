@@ -3,6 +3,7 @@ package contractgen.riscv.isa.extractor;
 import contractgen.Extractor;
 import contractgen.TestResult;
 import contractgen.riscv.isa.RISCVInstruction;
+import contractgen.riscv.isa.RISCV_TYPE;
 import contractgen.riscv.isa.contract.RISCVObservation;
 import contractgen.riscv.isa.contract.RISCVTestResult;
 import contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE;
@@ -40,12 +41,13 @@ public class RVFIExtractor implements Extractor {
             throw new RuntimeException(e);
         }
         Set<RISCVObservation> obs = new HashSet<>();
+        Set<Pair<RISCV_TYPE, RISCV_TYPE>> distinguishingInstructions = new HashSet<>();
         Wire retire_count = vcd.getTop().getChild("control").getWire("retire_count");
         int currentCount = Integer.parseInt(retire_count.getValueAt(retire_count.getLastChangeTime()), 2);
         while (currentCount > 0) {
             Integer retire_time = retire_count.getFirstTimeValue(StringUtils.toBinaryEncoding((long) currentCount));
 
-            if (!compareInstructions(vcd, retire_time, obs)) {
+            if (!compareInstructions(vcd, retire_time, obs, distinguishingInstructions)) {
                 // invalid instruction
                 currentCount--;
                 continue;
@@ -63,7 +65,7 @@ public class RVFIExtractor implements Extractor {
             currentCount--;
         }        
         obs= obs.stream().filter(o -> allowed_observations.contains(o.observation())).collect(Collectors.toSet());
-        return new RISCVTestResult(obs, adversaryDistinguishable, index);
+        return new RISCVTestResult(obs, distinguishingInstructions, adversaryDistinguishable, index);
     }
 
     /**
@@ -336,17 +338,16 @@ public class RVFIExtractor implements Extractor {
      * @param obs2        the current set of observations for execution two.
      * @return whether any error occurred.
      */
-    private boolean compareInstructions(VcdFile vcd, Integer retire_time, Set<RISCVObservation> obs) {
+    private boolean compareInstructions(VcdFile vcd, Integer retire_time, Set<RISCVObservation> obs, Set<Pair<RISCV_TYPE, RISCV_TYPE>> distinguishingInstructions) {
         RISCVInstruction instr_1;
         RISCVInstruction instr_2;
         try {
             instr_1 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("ctr").getWire("instr_1_i").getValueAt(retire_time));
             instr_2 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("ctr").getWire("instr_2_i").getValueAt(retire_time));
 
-            //if (!Objects.equals(instr_1.type(), instr_2.type())) {
-            //    obs1.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.OPCODE));
-            //    obs2.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.OPCODE));
-            //}
+            if (!Objects.equals(instr_1.type(), instr_2.type())) {
+                distinguishingInstructions.add(new Pair<RISCV_TYPE, RISCV_TYPE>(instr_1.type(), instr_2.type()));
+            }
 
             if (!Objects.equals(instr_1.type().getFormat(), instr_2.type().getFormat())) {
                 obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.FORMAT));

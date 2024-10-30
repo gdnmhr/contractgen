@@ -1,7 +1,10 @@
 package contractgen.riscv.isa.contract;
 
 import contractgen.TestResult;
+import contractgen.riscv.isa.RISCV_TYPE;
+import contractgen.util.Pair;
 import contractgen.Observation;
+import contractgen.Type;
 
 import java.util.Comparator;
 import java.util.Objects;
@@ -18,8 +21,8 @@ public class RISCVTestResult extends TestResult {
      * @param adversaryDistinguishable Whether the adversary was able to distinguish the two executions.
      * @param index                    The index of the respective test case to allow to associate it with the result.
      */
-    public RISCVTestResult(Set<RISCVObservation> possibilities, boolean adversaryDistinguishable, int index) {
-        super(possibilities.stream().map(o -> (Observation) o).collect(Collectors.toSet()), adversaryDistinguishable, index);
+    public RISCVTestResult(Set<RISCVObservation> possibilities, Set<Pair<RISCV_TYPE, RISCV_TYPE>> distinguishingInstructions, boolean adversaryDistinguishable, int index) {
+        super(possibilities.stream().map(o -> (Observation) o).collect(Collectors.toSet()), distinguishingInstructions.stream().map(p -> new Pair<Type, Type>(p.left(), p.right())).collect(Collectors.toSet()), adversaryDistinguishable, index);
     }
 
     /**
@@ -47,11 +50,6 @@ public class RISCVTestResult extends TestResult {
     @Override
     public Observation getBestObservation() {
         return observations.stream().min(Comparator.comparingInt(Observation::getValue)).orElseThrow();
-    }
-
-    @Override
-    public Set<Observation> getPossibleObservations() {
-        return observations;
     }
 
     @Override

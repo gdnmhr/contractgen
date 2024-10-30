@@ -19,7 +19,7 @@ public class SimpleTestResult extends TestResult {
      * @param index                     The index of the test case for further reference.
      */
     public SimpleTestResult(Set<SimpleObservation> possibilities, boolean adversaryDistinguishable, int index) {
-        super(possibilities.stream().map(o -> (Observation) o).collect(Collectors.toSet()), adversaryDistinguishable, index);
+        super(possibilities.stream().map(o -> (Observation) o).collect(Collectors.toSet()), Set.of(), adversaryDistinguishable, index);
     }
 
     @Override
@@ -41,7 +41,7 @@ public class SimpleTestResult extends TestResult {
     }
 
     @Override
-    public Set<Observation> getPossibleObservations() {
+    public Set<Observation> getDistinguishingObservations() {
         return observations;
     }
 

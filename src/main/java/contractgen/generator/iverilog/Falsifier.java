@@ -136,11 +136,13 @@ public class Falsifier extends Generator {
                         testCase.getProgram2().printInit(path.resolve("init_2.dat").toString());
                         testCase.getProgram2().printInstr(path.resolve("memory_2.dat").toString());
                         Files.write(path.resolve("program_2.txt"), testCase.getProgram2().toString().getBytes());
-                        Files.copy(Path.of(MARCH.getSimulationTracePath(id)), path.resolve("trace.vcd"));
+                        Files.copy(Path.of(MARCH.getSimulationTracePath(id)), path.resolve("trace.vcd"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
                     } else
                     if (pass == SIMULATION_RESULT.FAIL) {
                         TestResult ctx = MARCH.extractDifferences(id, testCase.getIndex());
                         if (!ctr.covers(ctx)) {
+                            System.out.println(ctr.getCurrentContract());
+                            System.out.println(ctx.getDistinguishingObservations());
                             int failno = fail.incrementAndGet();
                             Path path = falseNegativesPath.resolve(Integer.toString(failno));
                             path.toFile().mkdirs();
@@ -152,11 +154,16 @@ public class Falsifier extends Generator {
                             testCase.getProgram2().printInit(path.resolve("init_2.dat").toString());
                             testCase.getProgram2().printInstr(path.resolve("memory_2.dat").toString());
                             Files.write(path.resolve("program_2.txt"), testCase.getProgram2().toString().getBytes());
-                            Files.copy(Path.of(MARCH.getSimulationTracePath(id)), path.resolve("trace.vcd"));
+                            Files.copy(Path.of(MARCH.getSimulationTracePath(id)), path.resolve("trace.vcd"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
                             {
                                 final StringBuilder sb = new StringBuilder();
-                                ctx.getPossibleObservations().forEach(o -> sb.append(o.toString()).append("\n"));
-                                Files.write(path.resolve("obs.txt"), sb.toString().getBytes());
+                                ctx.getDistinguishingObservations().forEach(o -> sb.append(o.toString()).append("\n"));
+                                Files.write(path.resolve("dist-obs.txt"), sb.toString().getBytes());
+                            }
+                            {
+                                final StringBuilder sb = new StringBuilder();
+                                ctx.getDistinguishingInstructions().forEach(p -> sb.append("(").append(p.left().toString()).append(",").append(p.right().toString()).append(")\n"));
+                                Files.write(path.resolve("dist-insn.txt"), sb.toString().getBytes());
                             }
                         }
                     }

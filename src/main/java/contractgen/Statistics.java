@@ -3,6 +3,7 @@ package contractgen;
 import contractgen.riscv.isa.contract.RISCVContract;
 import contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE;
 import contractgen.updater.ILPUpdater;
+import contractgen.util.Pair;
 
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -113,6 +114,7 @@ public class Statistics {
                 int false_positive_eval = 0;
                 int false_negative_eval = 0;
                 Map<Observation, Integer> counter = new HashMap<>();
+                Map<Pair<Type, Type>, Integer> typeCounter = new HashMap<>();
                 for (TestResult item : evalset.getTestResults()) {
                     boolean covered = contract.covers(item);
                     if (item.isAdversaryDistinguishable()) {
@@ -122,11 +124,19 @@ public class Statistics {
                             false_negative_eval++;
                     } else {
                         if (covered) {
-                            Contract.whyCovers(contract.getCurrentContract(), item).forEach(obs -> {
+                            Pair<Set<Observation>, Set<Pair<Type, Type>>> whyCovers = contract.whyCovers(item);
+                            whyCovers.left().forEach(obs -> {
                                 if (counter.containsKey(obs)) {
                                     counter.put(obs, counter.get(obs) + 1);
                                 } else {
                                     counter.put(obs, 1);
+                                }
+                            });
+                            whyCovers.right().forEach(pair -> {
+                                if (typeCounter.containsKey(pair)) {
+                                    typeCounter.put(pair, typeCounter.get(pair) + 1);
+                                } else {
+                                    typeCounter.put(pair, 1);
                                 }
                             });
                             false_positive_eval++;

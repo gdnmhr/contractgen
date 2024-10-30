@@ -23,15 +23,15 @@ public class ILPUpdater implements Updater {
         boolean oldMethod = true;
         // Select between one variable per indistinguishable test case (oldMethod) and one variable per observation (that leads to n false positives) to optimize memory usage
         List<TestResult> positive =
-                testResults.stream().filter(res -> !res.getPossibleObservations().isEmpty()).filter(TestResult::isAdversaryIndistinguishable).toList();
+                testResults.stream().filter(res -> !res.getDistinguishingObservations().isEmpty()).filter(TestResult::isAdversaryIndistinguishable).toList();
         List<TestResult> negative =
-                testResults.stream().filter(res -> !res.getPossibleObservations().isEmpty()).filter(TestResult::isAdversaryDistinguishable).toList();
+                testResults.stream().filter(res -> !res.getDistinguishingObservations().isEmpty()).filter(TestResult::isAdversaryDistinguishable).toList();
 
         Loader.loadNativeLibraries();
         MPSolver solver = MPSolver.createSolver("CP_SAT");
 
         Set<Observation> allObservations = new HashSet<>();
-        testResults.forEach(res -> allObservations.addAll(res.getPossibleObservations()));
+        testResults.forEach(res -> allObservations.addAll(res.getDistinguishingObservations()));
 
         // variables representing whether obs is chosen or not
         HashMap<Object, Pair<MPVariable, Integer>> positive_covered;
@@ -46,7 +46,7 @@ public class ILPUpdater implements Updater {
             for (TestResult pe : positive) {
                 Pair<MPVariable, Integer> var = positive_covered.getOrDefault(pe, new Pair<>(solver.makeIntVar(0, 1, pe.toString()), 0));
                 positive_covered.put(pe, new Pair<>(var.left(), var.right() + 1));
-                hint.put(var.left(), oldContract.stream().anyMatch(o -> pe.getPossibleObservations().contains(o)) ? 1.0 : 0.0);
+                hint.put(var.left(), oldContract.stream().anyMatch(o -> pe.getDistinguishingObservations().contains(o)) ? 1.0 : 0.0);
             }
         } else {
             // count the number of times each observation occurs in the positive test cases
@@ -55,7 +55,7 @@ public class ILPUpdater implements Updater {
                 occurrences.put(obs, 0);
             }
             for (TestResult pe : positive) {
-                for (Observation obs : pe.getPossibleObservations()) {
+                for (Observation obs : pe.getDistinguishingObservations()) {
                     occurrences.put(obs, occurrences.get(obs) + 1);
                 }
             }
@@ -74,7 +74,7 @@ public class ILPUpdater implements Updater {
 
         if (oldMethod) {
             for (TestResult pe : positive) {
-                for (Observation obs : pe.getPossibleObservations()) {
+                for (Observation obs : pe.getDistinguishingObservations()) {
                     MPConstraint constraint = solver.makeConstraint(0.0, MPSolver.infinity());
                     constraint.setCoefficient(positive_covered.get(pe).left(), 1);
                     constraint.setCoefficient(selected_observations.get(obs), -1);
@@ -92,7 +92,7 @@ public class ILPUpdater implements Updater {
         // for every negative test case, at least one observation must be chosen
         for (TestResult ctx : negative) {
             MPConstraint constraint = solver.makeConstraint(1.0, MPSolver.infinity());
-            for (Observation obs : ctx.getPossibleObservations()) {
+            for (Observation obs : ctx.getDistinguishingObservations()) {
                 constraint.setCoefficient(selected_observations.get(obs), 1);
             }
         }

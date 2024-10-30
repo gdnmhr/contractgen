@@ -10,6 +10,10 @@ public interface Observation {
      */
     int getValue();
 
+    Type getType();
+
+    boolean matchExceptType(Observation observation);
+
     @Override
     boolean equals(Object o);
 
