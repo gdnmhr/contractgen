@@ -13,6 +13,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
+import com.google.gson.reflect.TypeToken;
 import java.util.stream.Collectors;
 
 /**
@@ -105,6 +106,8 @@ public class RISCVContract extends Contract {
         builder.registerTypeAdapter(TestResult.class, new TestResultDeserializer());
         builder.registerTypeAdapter(Observation.class, new ObservationDeserializer());
         builder.registerTypeAdapter(Updater.class, new UpdaterDeserializer());
+        builder.registerTypeAdapter(Pair.class, new PairDeserializer<RISCV_TYPE,RISCV_TYPE>(RISCV_TYPE.class, RISCV_TYPE.class));
+        builder.registerTypeAdapter(RISCV_TYPE.class, new RISCVTypeDeserializer());
         builder.setPrettyPrinting();
         Gson gson = builder.create();
 
@@ -123,7 +126,8 @@ public class RISCVContract extends Contract {
         builder.registerTypeAdapter(TestResult.class, new TestResultDeserializer());
         builder.registerTypeAdapter(Observation.class, new ObservationDeserializer());
         builder.registerTypeAdapter(Updater.class, new UpdaterDeserializer());
-        builder.registerTypeAdapter(Pair.class, new PairDeserializer<contractgen.Type,contractgen.Type>(contractgen.Type.class, contractgen.Type.class));
+        builder.registerTypeAdapter(Pair.class, new PairDeserializer<RISCV_TYPE,RISCV_TYPE>(RISCV_TYPE.class, RISCV_TYPE.class));
+        builder.registerTypeAdapter(RISCV_TYPE.class, new RISCVTypeDeserializer());
         builder.setPrettyPrinting();
         Gson gson = builder.create();
         return gson.fromJson(file, RISCVContract.class);
@@ -145,7 +149,13 @@ public class RISCVContract extends Contract {
             int index = jsonObject.has("index") ? jsonObject.get("index").getAsInt() : 0;
             JsonArray jsonDistinguishingInstructions = jsonObject.has("distinguishingInstructions") ? jsonObject.get("distinguishingInstructions").getAsJsonArray() : new JsonArray();
             Set<RISCVObservation> possibilities = jsonPossibilities.asList().stream().map(jsonE -> gson.fromJson(jsonE, RISCVObservation.class)).collect(Collectors.toSet());
-            Set<Pair<RISCV_TYPE, RISCV_TYPE>> distinguishingInstructions = jsonDistinguishingInstructions.asList().stream().map(jsonE -> gson.fromJson(jsonE, Pair.class)).collect(Collectors.toSet());
+            Set<Pair<RISCV_TYPE, RISCV_TYPE>> distinguishingInstructions = new HashSet<>();
+            for (JsonElement jsonE : jsonDistinguishingInstructions) {
+                distinguishingInstructions.add(gson.fromJson(jsonE, new TypeToken<Pair<RISCV_TYPE, RISCV_TYPE>>(){}.getType()));
+            }
+            if (distinguishingInstructions.size() > 0) {
+                System.out.println("Distinguishing instructions: " + distinguishingInstructions);
+            }
             return new RISCVTestResult(possibilities, distinguishingInstructions, adversaryDistinguishable, index);
         }
     }
@@ -200,6 +210,15 @@ public class RISCVContract extends Contract {
             return new Pair<T, U>(gson.fromJson(jsonLeft, classOfT), gson.fromJson(jsonRight, classOfU));
         }
 
+    }
+
+    public static class RISCVTypeDeserializer implements JsonDeserializer<RISCV_TYPE> {
+
+        @Override
+        public RISCV_TYPE deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            System.out.println("Deserializing RISCV_TYPE:" + jsonElement.getAsString());
+            return RISCV_TYPE.valueOf(jsonElement.getAsString());
+        }
     }
 
     /**
