@@ -147,7 +147,7 @@ public class ContractGen {
                 }
             } else {
                 if (covered) {
-                    Pair<Set<Observation>, Set<Pair<Type, Type>>> whyCovers = contract.whyCovers(item);
+                    Pair<Set<Observation>, Set<Pair<Type, Type>>> whyCovers = contract.whyCovers(res);
                     whyCovers.left().forEach(obs -> {
                         if (fp_counter.containsKey(obs)) {
                             fp_counter.put(obs, fp_counter.get(obs) + 1);
