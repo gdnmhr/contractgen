@@ -153,9 +153,6 @@ public class RISCVContract extends Contract {
             for (JsonElement jsonE : jsonDistinguishingInstructions) {
                 distinguishingInstructions.add(gson.fromJson(jsonE, new TypeToken<Pair<RISCV_TYPE, RISCV_TYPE>>(){}.getType()));
             }
-            if (distinguishingInstructions.size() > 0) {
-                System.out.println("Distinguishing instructions: " + distinguishingInstructions);
-            }
             return new RISCVTestResult(possibilities, distinguishingInstructions, adversaryDistinguishable, index);
         }
     }
@@ -216,7 +213,6 @@ public class RISCVContract extends Contract {
 
         @Override
         public RISCV_TYPE deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-            System.out.println("Deserializing RISCV_TYPE:" + jsonElement.getAsString());
             return RISCV_TYPE.valueOf(jsonElement.getAsString());
         }
     }
