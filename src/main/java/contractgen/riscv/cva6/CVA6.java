@@ -144,7 +144,8 @@ public class CVA6 extends MARCH {
             throw new RuntimeException(e);
         }
          */
-        runScript("/bin/bash " + BASE_PATH + "compile.sh " + BASE_PATH + " " + COMPILATION_PATH, false, 240);
+        String output = runScript("/bin/bash " + BASE_PATH + "compile.sh " + BASE_PATH + " " + COMPILATION_PATH, false, 240);
+        System.out.println(output);
         System.out.println("Compilation finished.");
     }
 
@@ -201,6 +202,7 @@ public class CVA6 extends MARCH {
         if (output.contains("SUCCESS")) return SIMULATION_RESULT.SUCCESS;
         if (output.contains("TIMEOUT")) return SIMULATION_RESULT.TIMEOUT;
         if (output.contains("ERROR")) return SIMULATION_RESULT.ERROR;
+        System.out.println(output);
         return SIMULATION_RESULT.UNKNOWN;
     }
 

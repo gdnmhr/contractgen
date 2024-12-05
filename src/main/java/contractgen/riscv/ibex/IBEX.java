@@ -134,7 +134,8 @@ IBEX extends MARCH {
         synchronized (getISA().getContract()) {
             replaceString(BASE_PATH + "verif/ctr.sv", "/* CONTRACT */", getISA().getContract().printContract());
         }
-        runScript("/bin/bash " + BASE_PATH + "compile.sh " + BASE_PATH + " " + COMPILATION_PATH, false, 240);
+        String output = runScript("/bin/bash " + BASE_PATH + "compile.sh " + BASE_PATH + " " + COMPILATION_PATH, false, 240);
+        System.out.println(output);
         System.out.println("Compilation finished.");
     }
 
@@ -201,6 +202,7 @@ IBEX extends MARCH {
             return SIMULATION_RESULT.TIMEOUT;
         if (output.contains("ERROR"))
             return SIMULATION_RESULT.ERROR;
+        System.out.println(output);
         return SIMULATION_RESULT.UNKNOWN;
     }
 
