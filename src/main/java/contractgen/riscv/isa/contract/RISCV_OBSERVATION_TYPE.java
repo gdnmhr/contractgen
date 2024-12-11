@@ -3,10 +3,12 @@ package contractgen.riscv.isa.contract;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import contractgen.ObservationType;
+
 /**
  * Possible observation types according to the contract template.
  */
-public enum RISCV_OBSERVATION_TYPE {
+public enum RISCV_OBSERVATION_TYPE implements ObservationType {
 
     /**
      * The type of the instruction.
@@ -132,7 +134,32 @@ public enum RISCV_OBSERVATION_TYPE {
     /**
      * Write-after-Write dependency with instruction -4.
      */
-    WAW_4(31, "waw_4");
+    WAW_4(31, "waw_4"),
+    /**
+     * Whether the value of rs1 is zero
+     */
+    REG_RS1_ZERO(32, "reg_rs1_zero"),
+    /**
+     * Whether the value of rs2 is zero
+     */
+    REG_RS2_ZERO(33, "reg_rs2_zero"),
+    /**
+     * Whether the value of rd is zero
+     */
+    REG_RD_ZERO(34, "reg_rd_zero"),
+    /**
+     * log2 of the value of rs1
+     */
+    REG_RS1_LOG2(35, "reg_rs1_log2"),
+    /**
+     * log2 of the value of rs2
+     */
+    REG_RS2_LOG2(36, "reg_rs2_log2"),
+    /**
+     * log2 of the value of rd
+     */
+    REG_RD_LOG2(37, "reg_rd_log2");
+
 
     /**
      * The severity of an observation type.
@@ -226,11 +253,23 @@ public enum RISCV_OBSERVATION_TYPE {
         );
     }
 
+    public static Set<RISCV_OBSERVATION_TYPE> getValue() {
+        return Set.of(
+                REG_RS1_ZERO,
+                REG_RS2_ZERO,
+                REG_RD_ZERO,
+                REG_RS1_LOG2,
+                REG_RS2_LOG2,
+                REG_RD_LOG2
+        );
+    }
+
     public enum RISCV_OBSERVATION_TYPE_GROUP {
         BASE,
         ALIGNED,
         BRANCH,
-        DEPENDENCIES
+        DEPENDENCIES,
+        VALUE
     }
 
     public static Set<RISCV_OBSERVATION_TYPE> getGroup(RISCV_OBSERVATION_TYPE_GROUP group) {
@@ -243,6 +282,8 @@ public enum RISCV_OBSERVATION_TYPE {
                 return getBranch();
             case DEPENDENCIES:
                 return getDependencies();
+            case VALUE:
+                return getValue();
             default:
                 throw new IllegalArgumentException("Unknown group: " + group);
         }

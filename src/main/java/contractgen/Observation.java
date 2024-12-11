@@ -12,6 +12,8 @@ public interface Observation {
 
     Type getType();
 
+    ObservationType getObservation();
+
     boolean matchExceptType(Observation observation);
 
     @Override

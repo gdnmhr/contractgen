@@ -12,7 +12,6 @@ import contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE;
 import contractgen.riscv.isa.extractor.BMCExtractor;
 import contractgen.riscv.isa.tests.RISCVIterativeTests;
 import contractgen.updater.ILPUpdater;
-import contractgen.util.Pair;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

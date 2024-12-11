@@ -58,4 +58,20 @@ public class StringUtils {
         if (length - s.length() <= 0) return s;
         return String.format("%0" + (length - s.length()) + "d", 0).replace('0', charToFill) + s;
     }
+
+    /**
+     * @param binaryStr The value encoded in binary.
+     * @return The value as Long
+     */
+    public static Long fromBinary(String binaryStr1) {
+        return Long.parseLong(binaryStr1, 2);
+    }
+
+    /**
+     * @param hexStr The value encoded in hexadecimal.
+     * @return The value as Long
+     */
+    public static Long fromHex(String hexStr) {
+        return Long.parseLong(hexStr, 16);
+    }
 }

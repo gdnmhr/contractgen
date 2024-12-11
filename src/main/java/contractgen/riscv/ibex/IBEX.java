@@ -4,7 +4,6 @@ import contractgen.*;
 import contractgen.riscv.isa.RISCV;
 import contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE;
 import contractgen.riscv.isa.extractor.RVFIExtractor;
-import contractgen.util.Pair;
 import contractgen.util.StringUtils;
 import contractgen.util.vcd.VcdFile;
 

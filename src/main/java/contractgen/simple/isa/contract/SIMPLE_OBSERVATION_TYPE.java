@@ -1,9 +1,11 @@
 package contractgen.simple.isa.contract;
 
+import contractgen.ObservationType;
+
 /**
  * The possible observations in the simple ISA.
  */
-public enum SIMPLE_OBSERVATION_TYPE {
+public enum SIMPLE_OBSERVATION_TYPE implements ObservationType{
     /**
      * The opcode.
      */

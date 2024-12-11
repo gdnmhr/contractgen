@@ -341,6 +341,7 @@ public class RISCVTestGenerator {
             }
 
              */
+            case REG_RS1_ZERO, REG_RS1_LOG2, REG_RS2_ZERO, REG_RS2_LOG2, REG_RD_ZERO, REG_RD_LOG2 -> null;
         };
     }
 

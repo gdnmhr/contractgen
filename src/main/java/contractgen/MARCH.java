@@ -1,7 +1,5 @@
 package contractgen;
 
-import contractgen.util.Pair;
-
 /**
  * Abstract microarchitecture.
  */

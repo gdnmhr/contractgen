@@ -20,6 +20,10 @@ public record SimpleObservation(SIMPLE_TYPE type, SIMPLE_OBSERVATION_TYPE observ
         return null;
     }
 
+    public SIMPLE_OBSERVATION_TYPE getObservation() {
+        return observation;
+    }
+
     public boolean matchExceptType(Observation observation) {
         return observation instanceof SimpleObservation && ((SimpleObservation) observation).observation == this.observation;
     }
