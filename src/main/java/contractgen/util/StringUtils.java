@@ -61,17 +61,17 @@ public class StringUtils {
 
     /**
      * @param binaryStr The value encoded in binary.
-     * @return The value as Long
+     * @return The unsigned value as Long
      */
     public static Long fromBinary(String binaryStr1) {
-        return Long.parseLong(binaryStr1, 2);
+        return Long.parseUnsignedLong(binaryStr1, 2);
     }
 
     /**
      * @param hexStr The value encoded in hexadecimal.
-     * @return The value as Long
+     * @return The unsigned value as Long
      */
     public static Long fromHex(String hexStr) {
-        return Long.parseLong(hexStr, 16);
+        return Long.parseUnsignedLong(hexStr, 16);
     }
 }
