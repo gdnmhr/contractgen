@@ -327,11 +327,13 @@ public class BMCExtractor implements Extractor {
             obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RS1_ZERO));
             obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RS1_LOG2));
         }
-        if (instr_1.hasRS1() && instr_2.hasRS1() && StringUtils.fromBinary(reg_rs1_1) == 0 && StringUtils.fromBinary(reg_rs1_2) == 0) {
+        if (instr_1.hasRS1() && instr_2.hasRS1() && StringUtils.fromBinary(reg_rs1_1) == 0 && !(StringUtils.fromBinary(reg_rs1_2) == 0)) {
             obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.REG_RS1_ZERO));
+        }
+        if (instr_1.hasRS1() && instr_2.hasRS1() && !(StringUtils.fromBinary(reg_rs1_1) == 0) && StringUtils.fromBinary(reg_rs1_2) == 0) {
             obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RS1_ZERO));
         }
-        if (instr_1.hasRS1() && instr_2.hasRS1() && (int)(Math.log(StringUtils.fromBinary(reg_rs1_1)) / Math.log(2)) == (int)(Math.log(StringUtils.fromBinary(reg_rs1_2)) / Math.log(2))) {
+        if (instr_1.hasRS1() && instr_2.hasRS1() && (int)(Math.log(StringUtils.fromBinary(reg_rs1_1)) / Math.log(2)) != (int)(Math.log(StringUtils.fromBinary(reg_rs1_2)) / Math.log(2))) {
             obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.REG_RS1_LOG2));
             obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RS1_LOG2));
         }
@@ -350,11 +352,13 @@ public class BMCExtractor implements Extractor {
             obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RS2_ZERO));
             obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RS2_LOG2));
         }
-        if (instr_1.hasRS2() && instr_2.hasRS2() && StringUtils.fromBinary(reg_rs2_1) == 0 && StringUtils.fromBinary(reg_rs2_2) == 0) {
+        if (instr_1.hasRS2() && instr_2.hasRS2() && StringUtils.fromBinary(reg_rs2_1) == 0 && !(StringUtils.fromBinary(reg_rs2_2) == 0)) {
             obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.REG_RS2_ZERO));
+        }
+        if (instr_1.hasRS2() && instr_2.hasRS2() && !(StringUtils.fromBinary(reg_rs2_1) == 0) && StringUtils.fromBinary(reg_rs2_2) == 0) {
             obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RS2_ZERO));
         }
-        if (instr_1.hasRS2() && instr_2.hasRS2() && (int)(Math.log(StringUtils.fromBinary(reg_rs2_1)) / Math.log(2)) == (int)(Math.log(StringUtils.fromBinary(reg_rs2_2)) / Math.log(2))) {
+        if (instr_1.hasRS2() && instr_2.hasRS2() && (int)(Math.log(StringUtils.fromBinary(reg_rs2_1)) / Math.log(2)) != (int)(Math.log(StringUtils.fromBinary(reg_rs2_2)) / Math.log(2))) {
             obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.REG_RS2_LOG2));
             obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RS2_LOG2));
         }
@@ -373,11 +377,13 @@ public class BMCExtractor implements Extractor {
             obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RD_ZERO));
             obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RD_LOG2));
         }
-        if (instr_1.hasRD() && instr_2.hasRD() && StringUtils.fromBinary(reg_rd_1) == 0 && StringUtils.fromBinary(reg_rd_2) == 0) {
+        if (instr_1.hasRD() && instr_2.hasRD() && StringUtils.fromBinary(reg_rd_1) == 0 && !(StringUtils.fromBinary(reg_rd_2) == 0)) {
             obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.REG_RD_ZERO));
+        }
+        if (instr_1.hasRD() && instr_2.hasRD() && !(StringUtils.fromBinary(reg_rd_1) == 0) && StringUtils.fromBinary(reg_rd_2) == 0) {
             obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RD_ZERO));
         }
-        if (instr_1.hasRD() && instr_2.hasRD() && (int)(Math.log(StringUtils.fromBinary(reg_rd_1)) / Math.log(2)) == (int)(Math.log(StringUtils.fromBinary(reg_rd_2)) / Math.log(2))) {
+        if (instr_1.hasRD() && instr_2.hasRD() && (int)(Math.log(StringUtils.fromBinary(reg_rd_1)) / Math.log(2)) != (int)(Math.log(StringUtils.fromBinary(reg_rd_2)) / Math.log(2))) {
             obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.REG_RD_LOG2));
             obs.add(new RISCVObservation(instr_2.type(), RISCV_OBSERVATION_TYPE.REG_RD_LOG2));
         }
