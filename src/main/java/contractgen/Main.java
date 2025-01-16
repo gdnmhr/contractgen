@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 @Command(name = "main", subcommands = {Synthesize.class, Analyze.class, Update.class, Evaluate.class, Falsify.class, PrintAtoms.class}, description = "Main application command.")
 public class Main implements Callable<Integer> {
@@ -83,7 +84,7 @@ class Synthesize implements Callable<Integer> {
     @Override
     public Integer call() {
         TestCases tc = new RISCVIterativeTests(isa, RISCV_OBSERVATION_TYPE.getGroups(template), seed, threads, number);
-        Generator generator = new ParallelIverilogGenerator(processor == CONFIG.PROCESSOR.IBEX ? new IBEX(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template)) : new CVA6(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template)), threads, false, null);
+        Generator generator = new ParallelIverilogGenerator(processor == CONFIG.PROCESSOR.IBEX ? new IBEX(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa) : new CVA6(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa), threads, false, null);
         
         long start = System.currentTimeMillis();
         Contract contract;
@@ -128,7 +129,7 @@ class Analyze implements Callable<Integer> {
     public Integer call() {
         Extractor extractor = new BMCExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
         TestResult res = extractor.extractResults(bmc_file.getPath(), true, 0);
-        RISCVContract ctr = new RISCVContract(List.of(res), new ILPUpdater());
+        RISCVContract ctr = new RISCVContract(res.getDistinguishingObservations().stream().collect(Collectors.toSet()), List.of(res), new ILPUpdater());
         System.out.println(ctr.toJSON());
         try (FileWriter writer = new FileWriter(out)) {
             ctr.toJSON(writer);
@@ -266,7 +267,7 @@ class Falsify implements Callable<Integer> {
             System.out.println(ctr.getCurrentContract());
             Files.write(out.resolve("contract.txt"), ctr.toString().getBytes());
             TestCases tc = new RISCVIterativeTests(isa, RISCV_OBSERVATION_TYPE.getGroups(template), seed, threads, number);
-            Generator generator = new Falsifier(processor == CONFIG.PROCESSOR.IBEX ? new IBEX(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template)) : new CVA6(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template)), threads, ctr, out);
+            Generator generator = new Falsifier(processor == CONFIG.PROCESSOR.IBEX ? new IBEX(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa) : new CVA6(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa), threads, ctr, out);
             generator.generate();
         } catch (IOException e) {
             e.printStackTrace();

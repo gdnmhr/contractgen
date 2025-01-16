@@ -56,6 +56,8 @@ public class RISCVTestResult extends TestResult {
     public String toString() {
         StringBuilder sb = new StringBuilder("\t Observations: \n");
         observations.forEach(obs -> sb.append(obs.toString()).append("\n"));
+        sb.append("\t Distinguishing instructions: \n");
+        distinguishingInstructions.forEach(pair -> sb.append("\t\t").append(pair).append("\n"));
         sb.append("\t\t").append(isAdversaryDistinguishable());
         return sb.toString();
     }

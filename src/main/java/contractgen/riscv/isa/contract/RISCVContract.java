@@ -24,16 +24,16 @@ public class RISCVContract extends Contract {
     /**
      * @param updater The updater to be used to compute the contract.
      */
-    public RISCVContract(Updater updater) {
-        super(updater);
+    public RISCVContract(Set<Observation> allAtoms, Updater updater) {
+        super(allAtoms, updater);
     }
 
     /**
      * @param initialResults Already available results to resume a computation.
      * @param updater        The updater to be used to compute the contract.
      */
-    public RISCVContract(List<TestResult> initialResults, Updater updater) {
-        super(initialResults, updater);
+    public RISCVContract(Set<Observation> allAtoms, List<TestResult> initialResults, Updater updater) {
+        super(allAtoms, initialResults, updater);
     }
 
     /**
@@ -56,7 +56,7 @@ public class RISCVContract extends Contract {
                     filtered_res.add(new RISCVTestResult(filered_obs, res.getDistinguishingInstructions().stream().map(p -> new Pair<>((RISCV_TYPE) p.left(), (RISCV_TYPE) p.right())).collect(Collectors.toSet()), res.isAdversaryDistinguishable(), res.getIndex()));
                 }
         );
-        return new RISCVContract(filtered_res, this.updater);
+        return new RISCVContract(this.ALL_ATOMS, filtered_res, this.updater);
     }
 
     @Override
@@ -250,6 +250,6 @@ public class RISCVContract extends Contract {
             results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.REG_RS1)), Set.of(), true, i++));
             results.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.REG_RS2)), Set.of(), true, i++));
         }
-        return new RISCVContract(results, new ILPUpdater());
+        return new RISCVContract(Set.of(), results, new ILPUpdater());
     }
 }

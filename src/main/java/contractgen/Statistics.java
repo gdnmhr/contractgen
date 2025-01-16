@@ -1,6 +1,9 @@
 package contractgen;
 
+import contractgen.riscv.isa.RISCV_SUBSET;
+import contractgen.riscv.isa.RISCV_TYPE;
 import contractgen.riscv.isa.contract.RISCVContract;
+import contractgen.riscv.isa.contract.RISCVObservation;
 import contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE;
 import contractgen.updater.ILPUpdater;
 import contractgen.util.Pair;
@@ -10,6 +13,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Generates statistics from two sets of evaluated test cases.
@@ -25,7 +29,7 @@ public class Statistics {
      * @param allowed_observations The set of allowed observations.
      * @throws IOException On filesystem errors.
      */
-    public static void genStatsParallel(String training, String eval, String results, int COUNT, int startingAt, Set<RISCV_OBSERVATION_TYPE> allowed_observations) throws IOException {
+    public static void genStatsParallel(String training, String eval, String results, int COUNT, int startingAt, Set<RISCV_OBSERVATION_TYPE> allowed_observations, Set<RISCV_SUBSET> isa) throws IOException {
 
         FileWriter fstream = new FileWriter(results, startingAt > 0); //true tells to append data.
         BufferedWriter out = new BufferedWriter(fstream);
@@ -36,7 +40,7 @@ public class Statistics {
         evalset.restrictObservations(allowed_observations);
         List<Thread> runners = new ArrayList<>();
         for (int i = 0; i < COUNT; i++) {
-            runners.add(new Thread(new StatisticsRunner(i, COUNT, training, evalset, out, startingAt, allowed_observations), "Runner_" + (i + 1)));
+            runners.add(new Thread(new StatisticsRunner(i, COUNT, training, evalset, out, startingAt, allowed_observations, isa), "Runner_" + (i + 1)));
         }
         runners.forEach(Thread::start);
         runners.forEach(t -> {
@@ -60,7 +64,7 @@ public class Statistics {
      */
     private record StatisticsRunner(int id, int COUNT, String training, RISCVContract evalset, BufferedWriter out,
                                     int startingAt,
-                                    Set<RISCV_OBSERVATION_TYPE> allowed_observations) implements Runnable {
+                                    Set<RISCV_OBSERVATION_TYPE> allowed_observations, Set<RISCV_SUBSET> isa) implements Runnable {
         @Override
         public void run() {
             int STEP_SIZE = 1;
@@ -72,7 +76,13 @@ public class Statistics {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            RISCVContract contract = new RISCVContract(new ILPUpdater());
+            Set<RISCV_TYPE> types = isa.stream().flatMap(subset -> Arrays.stream(RISCV_TYPE.values()).filter(type -> type.getSubset() == subset)).collect(Collectors.toSet());
+            Set<Observation> atoms = 
+            types.stream()
+                .flatMap(type -> allowed_observations.stream().map(observation -> new RISCVObservation(type, observation)))
+                .filter(RISCVObservation::isApplicable)
+                .collect(Collectors.toSet());
+            RISCVContract contract = new RISCVContract(atoms, new ILPUpdater());
             for (int i = 0; i < startingAt; i++) {
                 contract.add(reference.getTestResults().get(i));
             }

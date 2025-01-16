@@ -13,5 +13,5 @@ public interface Updater {
      * @param oldContract The old contract to be used as hint.
      * @return The computed contract.
      */
-    Set<Observation> update(List<TestResult> testResults, Set<Observation> oldContract);
+    Set<Observation> update(Set<Observation> allObservations, List<TestResult> testResults, Set<Observation> oldContract);
 }

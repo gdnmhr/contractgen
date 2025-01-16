@@ -16,6 +16,11 @@ import java.util.stream.Collectors;
 public abstract class Contract {
 
     /**
+     * All possible contract atoms.
+     */
+    protected final Set<Observation> ALL_ATOMS;
+
+    /**
      * The results of all testcases that have been evaluated yet.
      */
     private final List<TestResult> testResults = new ArrayList<>();
@@ -33,7 +38,8 @@ public abstract class Contract {
     /**
      * @param updater The updater to infer a contract from the test results
      */
-    protected Contract(Updater updater) {
+    protected Contract(Set<Observation> allAtoms, Updater updater) {
+        this.ALL_ATOMS = allAtoms;
         this.updater = updater;
     }
 
@@ -41,7 +47,8 @@ public abstract class Contract {
      * @param initialResults Initial test results from previous runs
      * @param updater        The updater to infer a contract from the test results
      */
-    protected Contract(List<TestResult> initialResults, Updater updater) {
+    protected Contract(Set<Observation> allAtoms, List<TestResult> initialResults, Updater updater) {
+        this.ALL_ATOMS = allAtoms;
         this.updater = updater;
         this.testResults.addAll(initialResults);
         this.update(true);
@@ -56,7 +63,7 @@ public abstract class Contract {
     public boolean update(boolean force) {
         if (!force && coversAll()) return false;
         Set<Observation> old = current_contract;
-        current_contract = updater.update(testResults, old);
+        current_contract = updater.update(ALL_ATOMS, testResults, old);
         return !Objects.equals(old, current_contract);
     }
 

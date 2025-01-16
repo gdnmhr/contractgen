@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class PowerSetUpdater implements Updater {
 
     @Override
-    public Set<Observation> update(List<TestResult> testResults, Set<Observation> ignored) {
+    public Set<Observation> update(Set<Observation> allObservations, List<TestResult> testResults, Set<Observation> ignored) {
         Set<Observation> all = new HashSet<>();
         testResults.forEach(ctx -> all.addAll(ctx.getDistinguishingObservations()));
         return setCover(set -> Contract.coversAll(testResults, set), Comparator.comparingInt(a -> a.stream().mapToInt(Observation::getValue).sum()), all);

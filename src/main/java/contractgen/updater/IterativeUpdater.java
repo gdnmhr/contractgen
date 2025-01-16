@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  */
 public class IterativeUpdater implements Updater {
     @Override
-    public Set<Observation> update(List<TestResult> testResults, Set<Observation> ignored) {
+    public Set<Observation> update(Set<Observation> allObservations, List<TestResult> testResults, Set<Observation> ignored) {
         Set<Observation> new_contract = new HashSet<>();
         Set<TestResult> remaining = testResults.stream().filter(ctx -> !Contract.covers(new_contract, ctx)).collect(Collectors.toSet());
         while (!remaining.isEmpty()) {

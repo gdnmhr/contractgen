@@ -16,7 +16,7 @@ public class SimpleContract extends Contract {
      * @param updater The updater to be used.
      */
     public SimpleContract(Updater updater) {
-        super(updater);
+        super(Set.of(), updater);
     }
 
     public String printContract() {
