@@ -162,8 +162,8 @@ public record RISCVInstruction(RISCV_TYPE type, Integer rd, Integer rs1, Integer
 
     public static boolean hasIMM(RISCV_TYPE type) {
      return switch (type.getFormat()) {
-         case RTYPE -> true;
-         case ITYPE, UTYPE, JTYPE, STYPE, BTYPE -> false;
+         case RTYPE -> false;
+         case ITYPE, UTYPE, JTYPE, STYPE, BTYPE -> true;
      };
     }
 

@@ -110,7 +110,6 @@ public class ILPUpdater implements Updater {
         
         HashMap<TestResult, MPVariable> indistinguishable_covered = new HashMap<>(indistinguishable.size());
         for (TestResult pe : indistinguishable) {
-            System.out.println(pe);
             MPVariable var = solver.makeBoolVar("C_" + pe.getIndex());
             indistinguishable_covered.put(pe, var);
             hint.put(var, oldContract.stream().anyMatch(o -> pe.getDistinguishingObservations().contains(o)) ? 1.0 : 0.0);
