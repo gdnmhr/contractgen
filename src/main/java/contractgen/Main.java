@@ -11,6 +11,7 @@ import contractgen.riscv.isa.contract.RISCVObservation;
 import contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE;
 import contractgen.riscv.isa.extractor.BMCExtractor;
 import contractgen.riscv.isa.tests.RISCVIterativeTests;
+import contractgen.riscv.sodor.SODOR;
 import contractgen.updater.ILPUpdater;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -84,7 +85,14 @@ class Synthesize implements Callable<Integer> {
     @Override
     public Integer call() {
         TestCases tc = new RISCVIterativeTests(isa, RISCV_OBSERVATION_TYPE.getGroups(template), seed, threads, number);
-        Generator generator = new ParallelIverilogGenerator(processor == CONFIG.PROCESSOR.IBEX ? new IBEX(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa) : new CVA6(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa), threads, false, null);
+        Generator generator = new 
+        ParallelIverilogGenerator(
+            switch (processor) {
+                case IBEX -> new IBEX(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                case CVA6 -> new CVA6(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                case SODOR -> new SODOR(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+            }, 
+            threads, false, null);
         
         long start = System.currentTimeMillis();
         Contract contract;
@@ -121,12 +129,19 @@ class Analyze implements Callable<Integer> {
     @Option(names = {"-o", "--output"}, required = true, description = "Output path (JSON)")
     File out;
 
+    // select the processor
+    @Option(names = {"-p", "--processor"}, required = true, description = "The processor to use. Options: ${COMPLETION-CANDIDATES}")
+    CONFIG.PROCESSOR processor;
+
     // select contract template
     @Option(names = {"-c", "--contract"}, required = true, description = "The contract template to use. Options: ${COMPLETION-CANDIDATES}", split = ",")
     Set<RISCV_OBSERVATION_TYPE.RISCV_OBSERVATION_TYPE_GROUP> template;
 
     @Override
     public Integer call() {
+        if (processor != CONFIG.PROCESSOR.IBEX) {
+            throw new RuntimeException("Only IBEX is supported for now.");
+        }
         Extractor extractor = new BMCExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
         TestResult res = extractor.extractResults(bmc_file.getPath(), true, 0);
         RISCVContract ctr = new RISCVContract(res.getDistinguishingObservations().stream().collect(Collectors.toSet()), List.of(res), new ILPUpdater());
@@ -267,7 +282,16 @@ class Falsify implements Callable<Integer> {
             System.out.println(ctr.getCurrentContract());
             Files.write(out.resolve("contract.txt"), ctr.toString().getBytes());
             TestCases tc = new RISCVIterativeTests(isa, RISCV_OBSERVATION_TYPE.getGroups(template), seed, threads, number);
-            Generator generator = new Falsifier(processor == CONFIG.PROCESSOR.IBEX ? new IBEX(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa) : new CVA6(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa), threads, ctr, out);
+            Generator generator = 
+            new Falsifier(
+                switch (processor) {
+                    case IBEX -> new IBEX(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                    case CVA6 -> new CVA6(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                    case SODOR -> new SODOR(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                }, 
+                threads, 
+                ctr, 
+                out);
             generator.generate();
         } catch (IOException e) {
             e.printStackTrace();

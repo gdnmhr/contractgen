@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class CONFIG {
     public enum CONTRACT_SOURCE {NEW, EXISTING, PREDEFINED}
 
-    public enum PROCESSOR {IBEX, CVA6}
+    public enum PROCESSOR {IBEX, CVA6, SODOR}
 
     public final String NAME;
     public final PROCESSOR CORE;
@@ -57,6 +57,7 @@ public class CONFIG {
         return "results/" + (switch (this.CORE) {
             case IBEX -> "ibex";
             case CVA6 -> "cva6";
+            case SODOR -> "sodor";
         }) + "/";
     }
 
