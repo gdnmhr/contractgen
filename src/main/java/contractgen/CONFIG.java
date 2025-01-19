@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class CONFIG {
     public enum CONTRACT_SOURCE {NEW, EXISTING, PREDEFINED}
 
-    public enum PROCESSOR {IBEX, CVA6, SODOR}
+    public enum PROCESSOR {IBEX, IBEX_CACHE, IBEX_SMALL, CVA6, SODOR}
 
     public final String NAME;
     public final PROCESSOR CORE;
@@ -56,6 +56,8 @@ public class CONFIG {
     public String getPATH() {
         return "results/" + (switch (this.CORE) {
             case IBEX -> "ibex";
+            case IBEX_CACHE -> "ibex_cache";
+            case IBEX_SMALL -> "ibex_small";
             case CVA6 -> "cva6";
             case SODOR -> "sodor";
         }) + "/";

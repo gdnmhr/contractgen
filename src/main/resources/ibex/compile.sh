@@ -6,7 +6,7 @@ rm -r "$LR_VERIF_OUT_DIR"
 mkdir -p "$LR_VERIF_OUT_DIR"
 
 case "$3" in
-  BASE|CACHE)
+  BASE|CACHE|SMALL)
     VARIANT="$3"
     ;;
   *)

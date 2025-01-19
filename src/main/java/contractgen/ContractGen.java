@@ -93,6 +93,7 @@ public class ContractGen {
                     switch (cfg.CORE) {
                         case IBEX -> new IBEX(IBEX.VARIANT.BASE, new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
                         case IBEX_CACHE -> new IBEX(IBEX.VARIANT.CACHE, new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
+                        case IBEX_SMALL -> new IBEX(IBEX.VARIANT.SMALL, new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
                         case CVA6 -> new CVA6(new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
                         case SODOR -> new SODOR(new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
                     },
@@ -120,6 +121,7 @@ public class ContractGen {
                     switch (cfg.CORE) {
                         case IBEX -> new IBEX(IBEX.VARIANT.BASE, new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
                         case IBEX_CACHE -> new IBEX(IBEX.VARIANT.CACHE, new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
+                        case IBEX_SMALL -> new IBEX(IBEX.VARIANT.SMALL, new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
                         case CVA6 -> new CVA6(new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
                         case SODOR -> new SODOR(new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
                     },

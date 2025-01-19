@@ -27,10 +27,15 @@ IBEX extends MARCH {
 
     public enum VARIANT {
         BASE, 
-        CACHE;
+        CACHE,
+        SMALL;
             
         public String toString() {
-            return this == BASE ? "BASE" : "CACHE";
+            return switch (this) {
+                case BASE -> "BASE";
+                case CACHE -> "CACHE";
+                case SMALL -> "SMALL";
+            };
         }
     }
 
