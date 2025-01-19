@@ -91,7 +91,8 @@ public class ContractGen {
                 Generator training_generator = 
                 new ParallelIverilogGenerator(
                     switch (cfg.CORE) {
-                        case IBEX -> new IBEX(new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
+                        case IBEX -> new IBEX(IBEX.VARIANT.BASE, new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
+                        case IBEX_CACHE -> new IBEX(IBEX.VARIANT.CACHE, new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
                         case CVA6 -> new CVA6(new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
                         case SODOR -> new SODOR(new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
                     },
@@ -117,7 +118,8 @@ public class ContractGen {
                 Generator eval_generator = 
                 new ParallelIverilogGenerator(
                     switch (cfg.CORE) {
-                        case IBEX -> new IBEX(new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
+                        case IBEX -> new IBEX(IBEX.VARIANT.BASE, new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
+                        case IBEX_CACHE -> new IBEX(IBEX.VARIANT.CACHE, new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
                         case CVA6 -> new CVA6(new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
                         case SODOR -> new SODOR(new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
                     },

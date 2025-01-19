@@ -1,7 +1,20 @@
+set -eax
+
 cd "$1" || exit
 export LR_VERIF_OUT_DIR=$2
 rm -r "$LR_VERIF_OUT_DIR"
 mkdir -p "$LR_VERIF_OUT_DIR"
+
+case "$3" in
+  BASE|CACHE)
+    VARIANT="$3"
+    ;;
+  *)
+    echo "Invalid variant: $3"
+    exit 1
+    ;;
+esac
+
 
 cd core
 patch -p1 < ../ibex.patch
@@ -28,6 +41,7 @@ for file in ${directories[*]}; do
     --define=SYNTHESIS \
     --define=CONTRACT \
     --define=RISCV_FORMAL \
+    --define=$VARIANT \
     ./core/rtl/*_pkg.sv \
     -I./core/vendor/lowrisc_ip/ip/prim/rtl \
     "$file" \

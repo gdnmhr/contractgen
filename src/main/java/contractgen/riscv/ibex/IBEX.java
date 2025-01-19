@@ -25,6 +25,15 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 public class
 IBEX extends MARCH {
 
+    public enum VARIANT {
+        BASE, 
+        CACHE;
+            
+        public String toString() {
+            return this == BASE ? "BASE" : "CACHE";
+        }
+    }
+
     /**
      * The path where to find the template.
      */
@@ -42,12 +51,15 @@ IBEX extends MARCH {
      */
     protected String SIMULATION_PATH = "/home/yosys/output/ibex/simulation/";
 
+    private final VARIANT VARIANT;
+
     /**
      * @param updater   The updater to be used to update the contract.
      * @param testCases The test cases to be used for generation or evaluation.
      */
-    public IBEX(Updater updater, TestCases testCases, Set<RISCV_OBSERVATION_TYPE> allowed_observations, Set<RISCV_SUBSET> isa) {
-    super(new RISCV(allowed_observations, isa, updater, testCases), new RVFIExtractor(allowed_observations));
+    public IBEX(VARIANT VARIANT, Updater updater, TestCases testCases, Set<RISCV_OBSERVATION_TYPE> allowed_observations, Set<RISCV_SUBSET> isa) {
+        super(new RISCV(allowed_observations, isa, updater, testCases), new RVFIExtractor(allowed_observations));
+        this.VARIANT = VARIANT;
     }
 
     @Override
@@ -135,7 +147,7 @@ IBEX extends MARCH {
         synchronized (getISA().getContract()) {
             replaceString(BASE_PATH + "verif/ctr.sv", "/* CONTRACT */", getISA().getContract().printContract());
         }
-        String output = runScript("/bin/bash " + BASE_PATH + "compile.sh " + BASE_PATH + " " + COMPILATION_PATH, false, 240);
+        String output = runScript("/bin/bash " + BASE_PATH + "compile.sh " + BASE_PATH + " " + COMPILATION_PATH + VARIANT, false, 240);
         System.out.println(output);
         System.out.println("Compilation finished.");
     }
@@ -183,7 +195,7 @@ IBEX extends MARCH {
 
     @Override
     public String getName() {
-        return "ibex";
+        return "ibex" + (this.VARIANT != VARIANT.BASE ? "_" + this.VARIANT.toString().toLowerCase() : "");
     }
 
     /**

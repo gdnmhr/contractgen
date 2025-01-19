@@ -154,6 +154,35 @@ module top (
         .instr_o                (instr_2),
     );
 
+    `ifdef CACHE
+    cached_data_mem data_mem_1 (
+        .clk_i                  (clock_1),
+        .data_req_i             (data_req_1),
+        .data_we_i              (data_we_1),
+        .data_be_i              (data_be_1),
+        .data_addr_i            (data_addr_1),
+        .data_wdata_i           (data_wdata_1),
+        .data_gnt_o             (data_gnt_1),
+        .data_rvalid_o          (data_rvalid_1),
+        .data_rdata_o           (data_rdata_1),
+        .data_err_o             (data_err_1),
+    );
+
+    cached_data_mem data_mem_2 (
+        .clk_i                  (clock_2),
+        .data_req_i             (data_req_2),
+        .data_we_i              (data_we_2),
+        .data_be_i              (data_be_2),
+        .data_addr_i            (data_addr_2),
+        .data_wdata_i           (data_wdata_2),
+        .data_gnt_o             (data_gnt_2),
+        .data_rvalid_o          (data_rvalid_2),
+        .data_rdata_o           (data_rdata_2),
+        .data_err_o             (data_err_2),
+    );
+
+    `else
+
     data_mem data_mem_1 (
         .clk_i                  (clock_1),
         .data_req_i             (data_req_1),
@@ -179,6 +208,8 @@ module top (
         .data_rdata_o           (data_rdata_2),
         .data_err_o             (data_err_2),
     );
+
+    `endif
 
     ibex_core #(
         .RV32M                  (ibex_pkg::RV32MSingleCycle),

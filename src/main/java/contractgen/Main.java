@@ -88,7 +88,8 @@ class Synthesize implements Callable<Integer> {
         Generator generator = new 
         ParallelIverilogGenerator(
             switch (processor) {
-                case IBEX -> new IBEX(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                case IBEX -> new IBEX(IBEX.VARIANT.BASE, new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                case IBEX_CACHE -> new IBEX(IBEX.VARIANT.CACHE, new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
                 case CVA6 -> new CVA6(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
                 case SODOR -> new SODOR(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
             }, 
@@ -285,7 +286,8 @@ class Falsify implements Callable<Integer> {
             Generator generator = 
             new Falsifier(
                 switch (processor) {
-                    case IBEX -> new IBEX(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                    case IBEX -> new IBEX(IBEX.VARIANT.BASE, new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                    case IBEX_CACHE -> new IBEX(IBEX.VARIANT.CACHE, new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
                     case CVA6 -> new CVA6(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
                     case SODOR -> new SODOR(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
                 }, 
