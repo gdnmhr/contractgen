@@ -236,9 +236,7 @@ module Core_2stage(
 
 
 //// for state invariant
-  reg        was_killed = 0;
-  reg        was_stalled = 0;
-  reg        next_retire = 0;
+  reg        exe_reg_valid = 0;
   reg        retire = 0;
   reg [31:0] instruction = 32'b0;
   reg [31:0] old_regfile [0:31];
@@ -250,11 +248,10 @@ module Core_2stage(
   reg [31:0] mem_wdata = 32'b0;
   reg        mem_we = 0;
   reg [2:0]  mem_be = 3'b0;
+  reg        exception = 0;
   always @(posedge clock) begin
     if (reset) begin
-      was_killed <= 0;
-      was_stalled <= 0;
-      next_retire <= 0;
+      exe_reg_valid <= 0;
       retire <= 0;
       instruction <= 32'b0;
       old_regfile <= 0;
@@ -266,14 +263,13 @@ module Core_2stage(
       mem_wdata <= 32'b0;
       mem_we <= 0;
       mem_be <= 3'b0;
+      exception <= 0;
     end else begin
-      was_killed <= d_io_ctl_if_kill;
-      was_stalled <= d_io_ctl_stall;
-      next_retire <= !d_io_ctl_stall;
-      retire <= was_stalled && !d_io_ctl_stall ? was_stalled : next_retire && !d_io_ctl_if_kill && !d_io_ctl_stall;
-      instruction <= was_killed ? instruction : d_io_dat_inst;
-      old_regfile <= was_killed ? old_regfile : rvfi_regfile;
-      old_pc <= was_killed ? new_pc : exe_reg_pc;
+      exe_reg_valid <= d_io_ctl_stall ? exe_reg_valid : !d_io_ctl_if_kill;
+      retire <= exe_reg_valid & ~d_io_ctl_stall;
+      instruction <= !exe_reg_valid ? instruction : d_io_dat_inst;
+      old_regfile <= !exe_reg_valid ? old_regfile : rvfi_regfile;
+      old_pc <= !exe_reg_valid ? new_pc : exe_reg_pc;
       new_pc <= pc_retire;
       mem_req <= io_dmem_req_valid;
       mem_addr <= io_dmem_req_bits_addr;
@@ -281,6 +277,7 @@ module Core_2stage(
       mem_wdata <= io_dmem_req_bits_data;
       mem_we <= io_dmem_req_bits_fcn;
       mem_be <= io_dmem_req_bits_typ;
+      exception <= d_io_ctl_exception;
     end
   end
 
@@ -298,6 +295,7 @@ module Core_2stage(
     .mem_wdata(mem_wdata),
     .mem_we(mem_we),
     .mem_be(mem_be),
+    .exception(exception),
     .rvfi_valid(rvfi_valid),
     .rvfi_order(rvfi_order),
     .rvfi_insn(rvfi_insn),

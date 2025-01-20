@@ -12,6 +12,7 @@ module RVFI_2stage(
 	input [31:0] mem_wdata,
 	input        mem_we,
 	input [2:0]  mem_be,
+	input        exception,
 	
 	output reg        rvfi_valid,
     output reg [63:0] rvfi_order,
@@ -91,7 +92,7 @@ module RVFI_2stage(
 			rvfi_valid <= 1;
 			rvfi_order <= rvfi_order + 1;
 			rvfi_insn <= instruction;
-			rvfi_trap <= 0;
+			rvfi_trap <= exception;
 			rvfi_halt <= 0;
 			rvfi_intr <= 0;
 			rvfi_mode <= 2'b0;
