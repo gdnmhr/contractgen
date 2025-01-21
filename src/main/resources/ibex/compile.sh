@@ -1,4 +1,4 @@
-set -eax
+set -ax
 
 cd "$1" || exit
 export LR_VERIF_OUT_DIR=$2
