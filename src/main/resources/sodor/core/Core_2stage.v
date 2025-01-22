@@ -220,6 +220,7 @@ module Core_2stage(
     .io_dat_br_ltu_ctr(io_dat_br_ltu_ctr),
 //// for state invariant 
     .exe_reg_pc(exe_reg_pc),
+    .new_pc(new_pc),
     .rvfi_regfile(rvfi_regfile),
   );
 //// for contract
@@ -237,47 +238,62 @@ module Core_2stage(
 
 //// for state invariant
   reg        exe_reg_valid = 0;
-  reg        retire = 0;
-  reg [31:0] instruction = 32'b0;
+  always @(posedge clock) begin
+    if (reset) begin
+      exe_reg_valid <= 0;
+    end else begin
+      exe_reg_valid <= d_io_ctl_stall ? exe_reg_valid : !d_io_ctl_if_kill;
+    end
+  end
+  wire        retire;
+  assign retire = exe_reg_valid & ~d_io_ctl_stall;
+  reg [31:0] stalled_instruction = 32'b0;
+  always @(posedge clock) begin
+    if (reset) begin
+      stalled_instruction <= 32'b0;
+    end else begin
+      stalled_instruction <= !exe_reg_valid ? stalled_instruction : d_io_dat_inst;
+    end
+  end
+  wire [31:0] instruction;
+  assign instruction = !exe_reg_valid ? stalled_instruction : d_io_dat_inst;
   reg [31:0] old_regfile [0:31];
-  reg [31:0] old_pc = 32'b0;
-  reg [31:0] new_pc = 32'b0;
+  always @(posedge clock) begin
+    if (reset) begin
+      old_regfile <= 0;
+    end else begin
+      if (retire) begin
+        old_regfile <= rvfi_regfile;
+      end
+    end
+  end
+  wire [31:0] old_pc;
+  assign old_pc = exe_reg_pc;
+  wire [31:0] new_pc;
+
   reg        mem_req = 0;
   reg [31:0] mem_addr = 32'b0;
   reg [31:0] mem_rdata = 32'b0;
   reg [31:0] mem_wdata = 32'b0;
   reg        mem_we = 0;
   reg [2:0]  mem_be = 3'b0;
-  reg        exception = 0;
+  wire       exception;
+  assign exception = d_io_ctl_exception;
   always @(posedge clock) begin
     if (reset) begin
-      exe_reg_valid <= 0;
-      retire <= 0;
-      instruction <= 32'b0;
-      old_regfile <= 0;
-      old_pc <= 32'b0;
-      new_pc <= 32'b0;
       mem_req <= 0;
       mem_addr <= 32'b0;
       mem_rdata <= 32'b0;
       mem_wdata <= 32'b0;
       mem_we <= 0;
       mem_be <= 3'b0;
-      exception <= 0;
     end else begin
-      exe_reg_valid <= d_io_ctl_stall ? exe_reg_valid : !d_io_ctl_if_kill;
-      retire <= exe_reg_valid & ~d_io_ctl_stall;
-      instruction <= !exe_reg_valid ? instruction : d_io_dat_inst;
-      old_regfile <= !exe_reg_valid ? old_regfile : rvfi_regfile;
-      old_pc <= !exe_reg_valid ? new_pc : exe_reg_pc;
-      new_pc <= pc_retire;
       mem_req <= io_dmem_req_valid;
       mem_addr <= io_dmem_req_bits_addr;
       mem_rdata <= io_dmem_resp_bits_data;
       mem_wdata <= io_dmem_req_bits_data;
       mem_we <= io_dmem_req_bits_fcn;
       mem_be <= io_dmem_req_bits_typ;
-      exception <= d_io_ctl_exception;
     end
   end
 
@@ -288,7 +304,7 @@ module Core_2stage(
     .old_regfile(old_regfile),
     .new_regfile(rvfi_regfile),
     .old_pc(old_pc),
-    .new_pc(exe_reg_pc),
+    .new_pc(new_pc),
     .mem_req(mem_req),
     .mem_addr(mem_addr),
     .mem_rdata(mem_rdata),

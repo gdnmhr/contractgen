@@ -55,10 +55,13 @@ module DatPath_2stage(
   output        io_dat_br_lt_ctr,
   output        io_dat_br_ltu_ctr,
 //// for state invariant
+  output [31:0] new_pc,
   output [31:0] exe_reg_pc,
   output [31:0] rvfi_regfile [0:31],
 
 );
+
+  assign new_pc = io_ctl_if_kill ? _if_pc_next_T ? if_pc_plus4 : ( _if_pc_next_T_1 ? exe_br_target : _if_pc_next_T_7 ) : if_reg_pc;
 
 //// for contract
   //instruction
