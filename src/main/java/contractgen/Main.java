@@ -141,10 +141,14 @@ class Analyze implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        if (processor != CONFIG.PROCESSOR.IBEX) {
-            throw new RuntimeException("Only IBEX is supported for now.");
-        }
-        Extractor extractor = new BMCExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
+        Extractor extractor = 
+            switch (processor) {
+                case IBEX -> new BMCExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
+                case IBEX_SMALL -> new BMCExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
+                case IBEX_CACHE -> new BMCExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
+                case CVA6 -> throw new RuntimeException("CVA6 not supported.");
+                case SODOR -> throw new RuntimeException("SODOR not supported.");
+            };
         TestResult res = extractor.extractResults(bmc_file.getPath(), true, 0);
         RISCVContract ctr = new RISCVContract(res.getDistinguishingObservations().stream().collect(Collectors.toSet()), List.of(res), new ILPUpdater());
         System.out.println(ctr.toJSON());
