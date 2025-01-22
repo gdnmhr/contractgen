@@ -213,9 +213,9 @@ module top (
 
     ibex_core #(
     `ifdef SMALL
-        .RV32M                  (ibex_pkg::RV32MFast),
+        .RV32M                  (ibex_pkg::RV32MSlow),
     `else
-        .RV32M                  (ibex_pkg::RV32MSingleCycle),
+        .RV32M                  (ibex_pkg::RV32MFast),
     `endif
         .WritebackStage         (1'b0),
     ) core_1 (
@@ -290,9 +290,9 @@ module top (
 
     ibex_core #(
     `ifdef SMALL
-        .RV32M                  (ibex_pkg::RV32MFast),
+        .RV32M                  (ibex_pkg::RV32MSlow),
     `else
-        .RV32M                  (ibex_pkg::RV32MSingleCycle),
+        .RV32M                  (ibex_pkg::RV32MFast),
     `endif
         .WritebackStage         (1'b0),
     ) core_2 (
