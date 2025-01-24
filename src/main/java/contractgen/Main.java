@@ -3,6 +3,7 @@ package contractgen;
 import contractgen.generator.iverilog.Falsifier;
 import contractgen.generator.iverilog.ParallelIverilogGenerator;
 import contractgen.riscv.cva6.CVA6;
+import contractgen.riscv.darkriscv.DARKRISCV;
 import contractgen.riscv.ibex.IBEX;
 import contractgen.riscv.isa.RISCV_SUBSET;
 import contractgen.riscv.isa.RISCV_TYPE;
@@ -94,6 +95,7 @@ class Synthesize implements Callable<Integer> {
                 case IBEX_SMALL -> new IBEX(IBEX.VARIANT.SMALL, new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
                 case CVA6 -> new CVA6(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
                 case SODOR -> new SODOR(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                case DARKRISCV -> new DARKRISCV(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
             }, 
             threads, false, null);
         
@@ -149,6 +151,7 @@ class Analyze implements Callable<Integer> {
                 case IBEX_CACHE -> new BMCExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
                 case CVA6 -> throw new RuntimeException("CVA6 not supported.");
                 case SODOR -> new SodorExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
+                case DARKRISCV -> throw new RuntimeException("DarkRISCV not supported.");
             };
         TestResult res = extractor.extractResults(bmc_file.getPath(), true, 0);
         RISCVContract ctr = new RISCVContract(res.getDistinguishingObservations().stream().collect(Collectors.toSet()), List.of(res), new ILPUpdater());
@@ -297,6 +300,7 @@ class Falsify implements Callable<Integer> {
                     case IBEX_CACHE -> new IBEX(IBEX.VARIANT.CACHE, new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
                     case CVA6 -> new CVA6(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
                     case SODOR -> new SODOR(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                    case DARKRISCV -> new DARKRISCV(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
                 }, 
                 threads, 
                 ctr, 
