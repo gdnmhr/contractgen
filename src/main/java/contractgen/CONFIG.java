@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class CONFIG {
     public enum CONTRACT_SOURCE {NEW, EXISTING, PREDEFINED}
 
-    public enum PROCESSOR {IBEX, IBEX_CACHE, IBEX_SMALL, CVA6, SODOR}
+    public enum PROCESSOR {IBEX, IBEX_CACHE, IBEX_SMALL, CVA6, SODOR, DARKRISCV}
 
     public final String NAME;
     public final PROCESSOR CORE;
@@ -60,6 +60,7 @@ public class CONFIG {
             case IBEX_SMALL -> "ibex_small";
             case CVA6 -> "cva6";
             case SODOR -> "sodor";
+            case DARKRISCV -> "darkriscv";
         }) + "/";
     }
 
