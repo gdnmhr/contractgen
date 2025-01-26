@@ -11,6 +11,7 @@ import contractgen.riscv.isa.contract.RISCVContract;
 import contractgen.riscv.isa.contract.RISCVObservation;
 import contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE;
 import contractgen.riscv.isa.extractor.BMCExtractor;
+import contractgen.riscv.isa.extractor.DarkRISCVExtractor;
 import contractgen.riscv.isa.extractor.SodorExtractor;
 import contractgen.riscv.isa.tests.RISCVIterativeTests;
 import contractgen.riscv.sodor.SODOR;
@@ -151,7 +152,7 @@ class Analyze implements Callable<Integer> {
                 case IBEX_CACHE -> new BMCExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
                 case CVA6 -> throw new RuntimeException("CVA6 not supported.");
                 case SODOR -> new SodorExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
-                case DARKRISCV -> throw new RuntimeException("DarkRISCV not supported.");
+                case DARKRISCV -> new DarkRISCVExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
             };
         TestResult res = extractor.extractResults(bmc_file.getPath(), true, 0);
         RISCVContract ctr = new RISCVContract(res.getDistinguishingObservations().stream().collect(Collectors.toSet()), List.of(res), new ILPUpdater());
