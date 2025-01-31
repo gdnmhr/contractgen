@@ -161,14 +161,31 @@ public class ContractGen {
         int false_positive = 0;
         int false_negative = 0;
         Map<Observation, Integer> fp_counter = new HashMap<>();
-        Map<Pair<Type, Type>, Integer> typeCounter = new HashMap<>();
+        Map<Pair<Type, Type>, Integer> fp_typeCounter = new HashMap<>();
+        Map<Observation, Integer> tp_counter = new HashMap<>();
+        Map<Pair<Type, Type>, Integer> tp_typeCounter = new HashMap<>();
         Set<TestResult> fn_set = new HashSet<>();
         for (TestResult res : results) {
             boolean covered = contract.covers(res);
             if (res.isAdversaryDistinguishable()) {
-                if (covered)
+                if (covered) {
+                    Pair<Set<Observation>, Set<Pair<Type, Type>>> whyCovers = contract.whyCovers(res);
+                    whyCovers.left().forEach(obs -> {
+                        if (tp_counter.containsKey(obs)) {
+                            tp_counter.put(obs, tp_counter.get(obs) + 1);
+                        } else {
+                            tp_counter.put(obs, 1);
+                        }
+                    });
+                    whyCovers.right().forEach(pair -> {
+                        if (tp_typeCounter.containsKey(pair)) {
+                            tp_typeCounter.put(pair, tp_typeCounter.get(pair) + 1);
+                        } else {
+                            tp_typeCounter.put(pair, 1);
+                        }
+                    });
                     true_positive++;
-                else {
+                } else {
                     false_negative++;
                     fn_set.add(res);
                 }
@@ -183,10 +200,10 @@ public class ContractGen {
                         }
                     });
                     whyCovers.right().forEach(pair -> {
-                        if (typeCounter.containsKey(pair)) {
-                            typeCounter.put(pair, typeCounter.get(pair) + 1);
+                        if (fp_typeCounter.containsKey(pair)) {
+                            fp_typeCounter.put(pair, fp_typeCounter.get(pair) + 1);
                         } else {
-                            typeCounter.put(pair, 1);
+                            fp_typeCounter.put(pair, 1);
                         }
                     });
                     false_positive++;
@@ -197,8 +214,12 @@ public class ContractGen {
         System.out.println("Results: true_negative: " + true_negative + ", false_negative: " + false_negative + ", true_positive: " + true_positive + ", false_positive: " + false_positive);
         StringBuilder fp_str = new StringBuilder();
         fp_counter.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).forEach(e -> fp_str.append(e.getValue()).append("\t").append(e.getKey()).append("\n"));
-        typeCounter.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).forEach(e -> fp_str.append(e.getValue()).append("\t").append("(").append(e.getKey().left()).append(",").append(e.getKey().right()).append(")").append("\n"));
+        fp_typeCounter.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).forEach(e -> fp_str.append(e.getValue()).append("\t").append("(").append(e.getKey().left()).append(",").append(e.getKey().right()).append(")").append("\n"));
         Files.write(Path.of(path + "-false-positives.txt"), fp_str.toString().getBytes());
+        StringBuilder tp_str = new StringBuilder();
+        tp_counter.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).forEach(e -> tp_str.append(e.getValue()).append("\t").append(e.getKey()).append("\n"));
+        tp_typeCounter.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).forEach(e -> tp_str.append(e.getValue()).append("\t").append("(").append(e.getKey().left()).append(",").append(e.getKey().right()).append(")").append("\n"));
+        Files.write(Path.of(path + "-true-positives.txt"), tp_str.toString().getBytes());
         StringBuilder fn_str = new StringBuilder();
         fn_set.forEach(res -> fn_str.append(res.getIndex()).append(":\t").append(res.getDistinguishingObservations()).append("\n"));
         Files.write(Path.of(path + "-false-negatives.txt"), fn_str.toString().getBytes());
