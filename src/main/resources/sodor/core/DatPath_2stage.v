@@ -687,5 +687,14 @@ end // initial
 `endif
 `endif // SYNTHESIS
 
-assign rvfi_regfile = regfile;
+integer i;
+always @(*) begin
+  for (i = 0; i < 32; i = i + 1) begin
+    if (i == regfile_MPORT_1_addr) begin
+      rvfi_regfile[i] = regfile_MPORT_1_data;
+    end else begin
+      rvfi_regfile[i] = regfile[i];
+    end
+  end
+end
 endmodule
