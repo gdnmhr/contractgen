@@ -16,7 +16,8 @@ WORKDIR /home/yosys/tools
 
 RUN git clone https://github.com/YosysHQ/yosys.git yosys
 WORKDIR /home/yosys/tools/yosys
-RUN git fetch --all --tags && git checkout yosys-0.30
+RUN git fetch --all --tags && git checkout v0.50
+RUN git submodule update --init
 RUN mkdir build
 WORKDIR /home/yosys/tools/yosys/build
 RUN make -j$(nproc) -f ../Makefile
