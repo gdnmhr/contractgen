@@ -18,11 +18,14 @@ module cached_data_mem (
     logic [7:0] last_values [`COUNT - 1:0];
     logic [32:0] temp;
 
+    logic next_rvalid_o;
+    logic [31:0] next_rdata_o;
+
     logic [31:0] cached_addr;
     logic cache_miss;
 
     logic req_now;
-    assign req_now = data_req_i && (cached_addr == data_addr_i) || cache_miss;
+    assign req_now = data_req_i && (cached_addr == data_addr_i) || data_req_i && data_we_i || cache_miss;
     
     initial begin
         last_addr = 0;
@@ -49,7 +52,7 @@ module cached_data_mem (
                     temp[(3 * 8) + 7:(3 * 8)] = last_values[i];
                 end
             end
-            data_rdata_o <= temp;
+            next_rdata_o <= temp;
             if (data_we_i) begin
                 if (data_be_i[0]) begin
                     for (i = 1; i < `COUNT; i = i + 1) begin
@@ -85,20 +88,28 @@ module cached_data_mem (
                 end
             end
             data_gnt_o <= 1'b1;
-            data_rvalid_o <= 1'b1;
+            next_rdata_o <= 1'b1;
+            next_rvalid_o <= 1'b1;
             data_err_o <= 1'b0;
-
-            cached_addr = data_addr_i;
+            if (data_we_i) begin
+                cached_addr = 31'b1;
+            end else begin
+                cached_addr = data_addr_i;
+            end
             cache_miss = 0;
         end else begin
             data_gnt_o <= 1'b0;
-            data_rvalid_o <= 1'b0;
+            next_rvalid_o <= 1'b0;
+            next_rdata_o <= 1'b0;
             data_err_o <= 1'b0;
 
             if (data_req_i) begin
                 cache_miss = 1'b1;
             end
         end
+
+        data_rvalid_o <= next_rvalid_o;
+        data_rdata_o <= next_rdata_o;
     end
 
     /*
