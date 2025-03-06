@@ -85,77 +85,53 @@ public class SodorExtractor implements Extractor {
      */
     private void compareDependencies(VcdFile vcd, Integer t1, Integer t2, int distance, RISCVInstruction instr_1, RISCVInstruction instr_2, Set<RISCVObservation> obs) {
         try {
-            // TODO when applicable
             Integer prev_t1 = t1;
             Integer prev_t2 = t2;
             for (int i = 0; i < distance; i++) {
                 prev_t1 = vcd.getTop().getChild("left").getChild("Core_2stage").getWire("rvfi_valid").getFirstTimeValueBefore("1", prev_t1);
                 prev_t2 = vcd.getTop().getChild("right").getChild("Core_2stage").getWire("rvfi_valid").getFirstTimeValueBefore("1", prev_t2);
             }
+            if (prev_t1 == null || prev_t2 == null) {
+                return;
+            }
             RISCVInstruction previous_instr_1 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("left").getChild("Core_2stage").getWire("rvfi_insn").getValueAt(prev_t1));
             RISCVInstruction previous_instr_2 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("right").getChild("Core_2stage").getWire("rvfi_insn").getValueAt(prev_t2));
 
-            if ((instr_1.hasRS1() && instr_2.hasRS1()) && (previous_instr_1.hasRD() && previous_instr_2.hasRD()) && Objects.equals(instr_1.rs1(), previous_instr_1.rd()) && !Objects.equals(instr_2.rs1(), previous_instr_2.rd())) {
-                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
-                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
-            }
-            if ((instr_1.hasRS1() && instr_2.hasRS1()) && (previous_instr_1.hasRD() && previous_instr_2.hasRD()) && !Objects.equals(instr_1.rs1(), previous_instr_1.rd()) && Objects.equals(instr_2.rs1(), previous_instr_2.rd())) {
-                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
-                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
-            }
-            if ((instr_1.hasRS1() && !instr_2.hasRS1()) && (previous_instr_1.hasRD()) && Objects.equals(instr_1.rs1(), previous_instr_1.rd())) {
-                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
-            }
-            if ((!instr_1.hasRS1() && instr_2.hasRS1()) && (previous_instr_2.hasRD()) && Objects.equals(instr_2.rs1(), previous_instr_2.rd())) {
-                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
-            }
-            if ((previous_instr_1.hasRD() && !previous_instr_2.hasRD()) && (instr_1.hasRS1()) && Objects.equals(instr_1.rs1(), previous_instr_1.rd())) {
-                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
-            }
-            if ((!previous_instr_1.hasRD() && previous_instr_2.hasRD()) && (instr_2.hasRS1()) && Objects.equals(instr_2.rs1(), previous_instr_2.rd())) {
-                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
-            }
-            
-            if ((instr_1.hasRS2() && instr_2.hasRS2()) && (previous_instr_1.hasRD() && previous_instr_2.hasRD()) && Objects.equals(instr_1.rs2(), previous_instr_1.rd()) && !Objects.equals(instr_2.rs2(), previous_instr_2.rd())) {
-                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
-                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
-            }
-            if ((instr_1.hasRS2() && instr_2.hasRS2()) && (previous_instr_1.hasRD() && previous_instr_2.hasRD()) && !Objects.equals(instr_1.rs2(), previous_instr_1.rd()) && Objects.equals(instr_2.rs2(), previous_instr_2.rd())) {
-                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
-                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
-            }
-            if ((instr_1.hasRS2() && !instr_2.hasRS2()) && (previous_instr_1.hasRD()) && Objects.equals(instr_1.rs2(), previous_instr_1.rd())) {
-                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
-            }
-            if ((!instr_1.hasRS2() && instr_2.hasRS2()) && (previous_instr_2.hasRD()) && Objects.equals(instr_2.rs2(), previous_instr_2.rd())) {
-                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
-            }
-            if ((previous_instr_1.hasRD() && !previous_instr_2.hasRD()) && (instr_1.hasRS2()) && Objects.equals(instr_1.rs2(), previous_instr_1.rd())) {
-                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
-            }
-            if ((!previous_instr_1.hasRD() && previous_instr_2.hasRD()) && (instr_2.hasRS2()) && Objects.equals(instr_2.rs2(), previous_instr_2.rd())) {
-                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
+            if (previous_instr_1 == null || previous_instr_2 == null) {
+                return;
             }
 
-            if ((instr_1.hasRD() && instr_2.hasRD()) && (previous_instr_1.hasRD() && previous_instr_2.hasRD()) && Objects.equals(instr_1.rd(), previous_instr_1.rd()) && !Objects.equals(instr_2.rd(), previous_instr_2.rd())) {
-                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
-                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
+            if ((instr_1.hasRS1() && previous_instr_1.hasRD()) && (instr_2.hasRS1() && previous_instr_2.hasRD()) && (Objects.equals(instr_1.rs1(), previous_instr_1.rd()) != !Objects.equals(instr_2.rs1(), previous_instr_2.rd()))) {
+                obs.add(new RISCVObservation(instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
+                obs.add(new RISCVObservation(instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
             }
-            if ((instr_1.hasRD() && instr_2.hasRD()) && (previous_instr_1.hasRD() && previous_instr_2.hasRD()) && !Objects.equals(instr_1.rd(), previous_instr_1.rd()) && Objects.equals(instr_2.rd(), previous_instr_2.rd())) {
-                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
-                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
+            if ((instr_1.hasRS1() && previous_instr_1.hasRD()) && !(instr_2.hasRS1() && previous_instr_2.hasRD())) {
+                obs.add(new RISCVObservation(instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
             }
-            if ((instr_1.hasRD() && !instr_2.hasRD()) && (previous_instr_1.hasRD()) && Objects.equals(instr_1.rd(), previous_instr_1.rd())) {
-                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
+            if (!(instr_1.hasRS1() && previous_instr_1.hasRD()) && (instr_2.hasRS1() && previous_instr_2.hasRD())) {
+                obs.add(new RISCVObservation(instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
             }
-            if ((!instr_1.hasRD() && instr_2.hasRD()) && (previous_instr_2.hasRD()) && Objects.equals(instr_2.rd(), previous_instr_2.rd())) {
-                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
+
+            if ((instr_1.hasRS2() && previous_instr_1.hasRD()) && (instr_2.hasRS2() && previous_instr_2.hasRD()) && (Objects.equals(instr_1.rs2(), previous_instr_1.rd()) != !Objects.equals(instr_2.rs2(), previous_instr_2.rd()))) {
+                obs.add(new RISCVObservation(instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
+                obs.add(new RISCVObservation(instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
             }
-            if ((previous_instr_1.hasRD() && !previous_instr_2.hasRD()) && (instr_1.hasRD()) && Objects.equals(instr_1.rd(), previous_instr_1.rd())) {
-                obs.add(new RISCVObservation(previous_instr_1.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
+            if ((instr_1.hasRS2() && previous_instr_1.hasRD()) && !(instr_2.hasRS2() && previous_instr_2.hasRD())) {
+                obs.add(new RISCVObservation(instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
             }
-            if ((!previous_instr_1.hasRD() && previous_instr_2.hasRD()) && (instr_2.hasRD()) && Objects.equals(instr_2.rd(), previous_instr_2.rd())) {
-                obs.add(new RISCVObservation(previous_instr_2.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
+            if (!(instr_1.hasRS2() && previous_instr_1.hasRD()) && (instr_2.hasRS2() && previous_instr_2.hasRD())) {
+                obs.add(new RISCVObservation(instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
+            }
+
+            if ((instr_1.hasRD() && previous_instr_1.hasRD()) && (instr_2.hasRD() && previous_instr_2.hasRD()) && (Objects.equals(instr_1.rd(), previous_instr_1.rd()) != !Objects.equals(instr_2.rd(), previous_instr_2.rd()))) {
+                obs.add(new RISCVObservation(instr_1.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
+                obs.add(new RISCVObservation(instr_2.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
+            }
+            if ((instr_1.hasRD() && previous_instr_1.hasRD()) && !(instr_2.hasRD() && previous_instr_2.hasRD())) {
+                obs.add(new RISCVObservation(instr_1.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
+            }
+            if (!(instr_1.hasRD() && previous_instr_1.hasRD()) && (instr_2.hasRD() && previous_instr_2.hasRD())) {
+                obs.add(new RISCVObservation(instr_2.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
             }
         } catch (Exception ignored) {
 
