@@ -1,4 +1,4 @@
-package contractgen.riscv.darkriscv;
+package contractgen.riscv.sodor;
 
 import contractgen.*;
 import contractgen.riscv.isa.RISCV;
@@ -20,33 +20,33 @@ import static contractgen.util.ScriptUtils.runScript;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
- * The Dark RISC-V microarchitecture.
+ * The Sodor microarchitecture.
  */
 public class
-DARKRISCV extends MARCH {
+SODOR_2 extends MARCH {
 
     /**
      * The path where to find the template.
      */
-    private static final String TEMPLATE_PATH = "/home/yosys/resources/darkriscv/";
+    private static final String TEMPLATE_PATH = "/home/yosys/resources/sodor-2/";
     /**
      * The path where to store the instantiated template.
      */
-    protected String BASE_PATH = "/home/yosys/output/darkriscv/generated/";
+    protected String BASE_PATH = "/home/yosys/output/sodor-2/generated/";
     /**
      * The path where the compiled module is to be stored.
      */
-    protected String COMPILATION_PATH = "/home/yosys/output/darkriscv/compiled/";
+    protected String COMPILATION_PATH = "/home/yosys/output/sodor-2/compiled/";
     /**
      * The path where simulation takes place.
      */
-    protected String SIMULATION_PATH = "/home/yosys/output/darkriscv/simulation/";
+    protected String SIMULATION_PATH = "/home/yosys/output/sodor-2/simulation/";
 
     /**
      * @param updater   The updater to be used to update the contract.
      * @param testCases The test cases to be used for generation or evaluation.
      */
-    public DARKRISCV(Updater updater, TestCases testCases, Set<RISCV_OBSERVATION_TYPE> allowed_observations, Set<RISCV_SUBSET> isa) {
+    public SODOR_2(Updater updater, TestCases testCases, Set<RISCV_OBSERVATION_TYPE> allowed_observations, Set<RISCV_SUBSET> isa) {
     super(new RISCV(allowed_observations, isa, updater, testCases), new RVFIExtractor(allowed_observations));
     }
 
@@ -156,7 +156,7 @@ DARKRISCV extends MARCH {
      */
     private void writeTestCase(String PATH, TestCase testCase) {
         try {
-            copyFileOrFolder(Path.of(COMPILATION_PATH + "darkriscv").toFile(), Path.of(PATH + "darkriscv").toFile(), REPLACE_EXISTING);
+            copyFileOrFolder(Path.of(COMPILATION_PATH + "sodor-2").toFile(), Path.of(PATH + "sodor-2").toFile(), REPLACE_EXISTING);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -183,7 +183,7 @@ DARKRISCV extends MARCH {
 
     @Override
     public String getName() {
-        return "darkriscv";
+        return "sodor_2";
     }
 
     /**
@@ -191,7 +191,7 @@ DARKRISCV extends MARCH {
      * @return The result of the simulation.
      */
     private SIMULATION_RESULT simulate(String PATH) {
-        String output = runScript(PATH + "darkriscv", true, 30);
+        String output = runScript(PATH + "sodor-2", true, 30);
         assert output != null;
         if (output.contains("FAIL"))
             return SIMULATION_RESULT.FAIL;

@@ -3,7 +3,8 @@ package contractgen;
 import contractgen.generator.iverilog.Falsifier;
 import contractgen.generator.iverilog.ParallelIverilogGenerator;
 import contractgen.riscv.cva6.CVA6;
-import contractgen.riscv.darkriscv.DARKRISCV;
+import contractgen.riscv.darkriscv.DARKRISCV_2;
+import contractgen.riscv.darkriscv.DARKRISCV_3;
 import contractgen.riscv.ibex.IBEX;
 import contractgen.riscv.isa.RISCV_SUBSET;
 import contractgen.riscv.isa.RISCV_TYPE;
@@ -14,7 +15,8 @@ import contractgen.riscv.isa.extractor.BMCExtractor;
 import contractgen.riscv.isa.extractor.DarkRISCVExtractor;
 import contractgen.riscv.isa.extractor.SodorExtractor;
 import contractgen.riscv.isa.tests.RISCVIterativeTests;
-import contractgen.riscv.sodor.SODOR;
+import contractgen.riscv.sodor.SODOR_2;
+import contractgen.riscv.sodor.SODOR_5;
 import contractgen.updater.ILPUpdater;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -95,8 +97,10 @@ class Synthesize implements Callable<Integer> {
                 case IBEX_CACHE -> new IBEX(IBEX.VARIANT.CACHE, new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
                 case IBEX_SMALL -> new IBEX(IBEX.VARIANT.SMALL, new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
                 case CVA6 -> new CVA6(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
-                case SODOR -> new SODOR(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
-                case DARKRISCV -> new DARKRISCV(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                case SODOR_2 -> new SODOR_2(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                case SODOR_5 -> new SODOR_5(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                case DARKRISCV_2 -> new DARKRISCV_2(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                case DARKRISCV_3 -> new DARKRISCV_3(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
             }, 
             threads, false, null);
         
@@ -151,8 +155,10 @@ class Analyze implements Callable<Integer> {
                 case IBEX_SMALL -> new BMCExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
                 case IBEX_CACHE -> new BMCExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
                 case CVA6 -> throw new RuntimeException("CVA6 not supported.");
-                case SODOR -> new SodorExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
-                case DARKRISCV -> new DarkRISCVExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
+                case SODOR_2 -> new SodorExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
+                case SODOR_5 -> new SodorExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
+                case DARKRISCV_2 -> new DarkRISCVExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
+                case DARKRISCV_3 -> new DarkRISCVExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
             };
         TestResult res = extractor.extractResults(bmc_file.getPath(), true, 0);
         RISCVContract ctr = new RISCVContract(res.getDistinguishingObservations().stream().collect(Collectors.toSet()), List.of(res), new ILPUpdater());
@@ -300,8 +306,10 @@ class Falsify implements Callable<Integer> {
                     case IBEX_SMALL -> new IBEX(IBEX.VARIANT.SMALL, new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
                     case IBEX_CACHE -> new IBEX(IBEX.VARIANT.CACHE, new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
                     case CVA6 -> new CVA6(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
-                    case SODOR -> new SODOR(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
-                    case DARKRISCV -> new DARKRISCV(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                    case SODOR_2 -> new SODOR_2(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                    case SODOR_5 -> new SODOR_5(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                    case DARKRISCV_2 -> new DARKRISCV_2(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
+                    case DARKRISCV_3 -> new DARKRISCV_3(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa);
                 }, 
                 threads, 
                 ctr, 

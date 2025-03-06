@@ -69,4 +69,4 @@ sed -i '/\/\/ Trace: verif\/control.sv:22:9/i $readmemh({"count.dat"}, counters,
 cd "$LR_VERIF_OUT_DIR"/ || exit
 
 # shellcheck disable=SC2035
-iverilog -o sodor *.v
+iverilog -o sodor-2 *.v

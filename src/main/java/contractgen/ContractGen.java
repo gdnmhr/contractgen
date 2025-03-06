@@ -2,7 +2,8 @@ package contractgen;
 
 import contractgen.generator.iverilog.ParallelIverilogGenerator;
 import contractgen.riscv.cva6.CVA6;
-import contractgen.riscv.darkriscv.DARKRISCV;
+import contractgen.riscv.darkriscv.DARKRISCV_2;
+import contractgen.riscv.darkriscv.DARKRISCV_3;
 import contractgen.riscv.ibex.IBEX;
 import contractgen.riscv.isa.contract.RISCVContract;
 import contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE;
@@ -10,7 +11,8 @@ import contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE;
 import static contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE.*;
 
 import contractgen.riscv.isa.tests.RISCVIterativeTests;
-import contractgen.riscv.sodor.SODOR;
+import contractgen.riscv.sodor.SODOR_2;
+import contractgen.riscv.sodor.SODOR_5;
 import contractgen.updater.ILPUpdater;
 import contractgen.util.Pair;
 
@@ -96,8 +98,10 @@ public class ContractGen {
                         case IBEX_CACHE -> new IBEX(IBEX.VARIANT.CACHE, new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
                         case IBEX_SMALL -> new IBEX(IBEX.VARIANT.SMALL, new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
                         case CVA6 -> new CVA6(new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
-                        case SODOR -> new SODOR(new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
-                        case DARKRISCV -> new DARKRISCV(new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
+                        case SODOR_2 -> new SODOR_2(new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
+                        case SODOR_5 -> new SODOR_5(new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
+                        case DARKRISCV_2 -> new DARKRISCV_2(new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
+                        case DARKRISCV_3 -> new DARKRISCV_3(new ILPUpdater(), training_tc, cfg.allowed_observations, cfg.subsets);
                     },
                     cfg.THREADS, 
                     cfg.DEBUG, 
@@ -125,8 +129,10 @@ public class ContractGen {
                         case IBEX_CACHE -> new IBEX(IBEX.VARIANT.CACHE, new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
                         case IBEX_SMALL -> new IBEX(IBEX.VARIANT.SMALL, new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
                         case CVA6 -> new CVA6(new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
-                        case SODOR -> new SODOR(new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
-                        case DARKRISCV -> new DARKRISCV(new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
+                        case SODOR_2 -> new SODOR_2(new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
+                        case SODOR_5 -> new SODOR_5(new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
+                        case DARKRISCV_2 -> new DARKRISCV_2(new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
+                        case DARKRISCV_3 -> new DARKRISCV_3(new ILPUpdater(), eval_tc, cfg.allowed_observations, cfg.subsets);
                     },
                     cfg.THREADS, 
                     cfg.DEBUG, 
