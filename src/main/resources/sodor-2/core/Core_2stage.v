@@ -271,6 +271,7 @@ module Core_2stage(
   assign old_pc = exe_reg_pc;
   wire [31:0] new_pc;
 
+/*
   reg        mem_req = 0;
   reg [31:0] mem_addr = 32'b0;
   reg [31:0] mem_rdata = 32'b0;
@@ -296,6 +297,22 @@ module Core_2stage(
       mem_be <= io_dmem_req_bits_typ;
     end
   end
+*/
+
+  wire        mem_req;
+  assign mem_req = io_dmem_req_valid;
+  wire [31:0] mem_addr;
+  assign mem_addr = io_dmem_req_bits_addr;
+  wire [31:0] mem_rdata;
+  assign mem_rdata = io_dmem_resp_bits_data;
+  wire [31:0] mem_wdata;
+  assign mem_wdata = io_dmem_req_bits_data;
+  wire        mem_we;
+  assign mem_we = io_dmem_req_bits_fcn;
+  wire [2:0]  mem_be;
+  assign mem_be = io_dmem_req_bits_typ;
+  wire       exception;
+  assign exception = d_io_ctl_exception;
 
   RVFI_2stage RVFI_2stage(
     .clock(clock),

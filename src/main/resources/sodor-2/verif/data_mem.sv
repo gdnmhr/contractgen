@@ -49,32 +49,32 @@ module data_mem (
                         last_addr[i-1] = last_addr[i];
                         last_values[i-1] = last_values[i];
                     end
-                    last_addr[`COUNT] = data_addr_i + 0;
-                    last_values[`COUNT] = data_wdata_i[(0 * 8) + 7:(0 * 8)];
+                    last_addr[`COUNT - 1] = data_addr_i + 0;
+                    last_values[`COUNT - 1] = data_wdata_i[(0 * 8) + 7:(0 * 8)];
                 end
                 if (data_be_i[1]) begin
                     for (i = 1; i < `COUNT; i = i + 1) begin
                         last_addr[i-1] = last_addr[i];
                         last_values[i-1] = last_values[i];
                     end
-                    last_addr[`COUNT] = data_addr_i + 1;
-                    last_values[`COUNT] = data_wdata_i[(1 * 8) + 7:(1 * 8)];
+                    last_addr[`COUNT - 1] = data_addr_i + 1;
+                    last_values[`COUNT - 1] = data_wdata_i[(1 * 8) + 7:(1 * 8)];
                 end
                 if (data_be_i[2]) begin
                     for (i = 1; i < `COUNT; i = i + 1) begin
                         last_addr[i-1] = last_addr[i];
                         last_values[i-1] = last_values[i];
                     end
-                    last_addr[`COUNT] = data_addr_i + 2;
-                    last_values[`COUNT] = data_wdata_i[(2 * 8) + 7:(2 * 8)];
+                    last_addr[`COUNT - 1] = data_addr_i + 2;
+                    last_values[`COUNT - 1] = data_wdata_i[(2 * 8) + 7:(2 * 8)];
                 end
                 if (data_be_i[3]) begin
                     for (i = 1; i < `COUNT; i = i + 1) begin
                         last_addr[i-1] = last_addr[i];
                         last_values[i-1] = last_values[i];
                     end
-                    last_addr[`COUNT] = data_addr_i + 3;
-                    last_values[`COUNT] = data_wdata_i[(3 * 8) + 7:(3 * 8)];
+                    last_addr[`COUNT - 1] = data_addr_i + 3;
+                    last_values[`COUNT - 1] = data_wdata_i[(3 * 8) + 7:(3 * 8)];
                 end
             end
             data_gnt_o <= 1'b1;
