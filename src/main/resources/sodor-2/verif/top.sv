@@ -40,14 +40,14 @@ module top (
 	end
 
 
-    logic instr_req_1;
-    logic instr_req_2;
-    logic [31:0] instr_addr_1;
-    logic [31:0] instr_addr_2;
-    logic instr_gnt_1;
-    logic instr_gnt_2;
-    logic [31:0] instr_1;
-    logic [31:0] instr_2;
+    logic imem_req_1;
+    logic imem_req_2;
+    logic [31:0] imem_addr_1;
+    logic [31:0] imem_addr_2;
+    logic imem_gnt_1;
+    logic imem_gnt_2;
+    logic [31:0] imem_data_1;
+    logic [31:0] imem_data_2;
 
 
     logic data_req_1;
@@ -142,10 +142,10 @@ module top (
     ) instr_mem_1 (
         .clk_i                  (clock_1),
         .enable_i               (enable_1),
-        .instr_req_i            (instr_req_1),
-        .instr_addr_i           (instr_addr_1),
-        .instr_gnt_o            (instr_gnt_1),
-        .instr_o                (instr_1),
+        .instr_req_i            (imem_req_1),
+        .instr_addr_i           (imem_addr_1),
+        .instr_gnt_o            (imem_gnt_1),
+        .instr_o                (imem_data_1),
     );
 
     instr_mem #(
@@ -153,10 +153,10 @@ module top (
     ) instr_mem_2 (
         .clk_i                  (clock_2),
         .enable_i               (enable_2),
-        .instr_req_i            (instr_req_2),
-        .instr_addr_i           (instr_addr_2),
-        .instr_gnt_o            (instr_gnt_2),
-        .instr_o                (instr_2),
+        .instr_req_i            (imem_req_2),
+        .instr_addr_i           (imem_addr_2),
+        .instr_gnt_o            (imem_gnt_2),
+        .instr_o                (imem_data_2),
     );
 
     data_mem data_mem_1 (
@@ -186,6 +186,34 @@ module top (
     );
 
     wire [2:0] mem_typ_1;
+
+
+    logic instr_req_1;
+    logic [31:0] instr_addr_1;
+
+    reg [31:0] prev_instr_addr_1;
+    always @(posedge clock_1) begin
+        if (instr_req_1)
+            prev_instr_addr_1 <= instr_addr_1;
+    end
+    reg prev_gnt_1;
+    always @(posedge clock_1) begin
+        if (instr_req_1)
+            prev_gnt_1 <= imem_gnt_1;
+    end
+    reg [31:0] prev_instr_1;
+    always @(posedge clock_1) begin
+        if (instr_req_1)
+            prev_instr_1 <= imem_data_1;
+    end
+
+    assign imem_req_1 = 1;
+    assign imem_addr_1 = instr_req_1 ? instr_addr_1 : prev_instr_addr_1;
+
+    wire instr_gnt_1;
+    assign instr_gnt_1 = instr_req_1 ? imem_gnt_1 : prev_gnt_1;
+    wire [31:0] instr_1;
+    assign instr_1 = instr_req_1 ? imem_data_1 : prev_instr_1;
 
     Core_2stage core_1 (
         .clock                      (clock_1),
@@ -218,7 +246,7 @@ module top (
         .rvfi_valid                 (retire_1),
         .rvfi_order                 (),
         .rvfi_insn                  (retire_instr_1),
-        .rvfi_trap                  (retire_trap_1),
+        .rvfi_trap                  (rvfi_trap_1),
         .rvfi_halt                  (),
         .rvfi_intr                  (),
         .rvfi_mode                  (),
@@ -245,6 +273,33 @@ module top (
 
 
     wire [2:0] mem_typ_2;
+
+    logic instr_req_2;
+    logic [31:0] instr_addr_2;
+
+    reg [31:0] prev_instr_addr_2;
+    always @(posedge clock_2) begin
+        if (instr_req_2)
+            prev_instr_addr_2 <= instr_addr_2;
+    end
+    reg prev_gnt_2;
+    always @(posedge clock_2) begin
+        if (instr_req_2)
+            prev_gnt_2 <= imem_gnt_2;
+    end
+    reg [31:0] prev_instr_2;
+    always @(posedge clock_2) begin
+        if (instr_req_2)
+            prev_instr_2 <= imem_data_2;
+    end
+
+    assign imem_req_2 = 1;
+    assign imem_addr_2 = instr_req_2 ? instr_addr_2 : prev_instr_addr_2;
+
+    wire instr_gnt_2;
+    assign instr_gnt_2 = instr_req_2 ? imem_gnt_2 : prev_gnt_2;
+    wire [31:0] instr_2;
+    assign instr_2 = instr_req_2 ? imem_data_2 : prev_instr_2;
 
     Core_2stage core_2 (
         .clock                      (clock_2),
@@ -277,7 +332,7 @@ module top (
         .rvfi_valid                 (retire_2),
         .rvfi_order                 (),
         .rvfi_insn                  (retire_instr_2),
-        .rvfi_trap                  (retire_trap_2),
+        .rvfi_trap                  (rvfi_trap_2),
         .rvfi_halt                  (),
         .rvfi_intr                  (),
         .rvfi_mode                  (),

@@ -85,7 +85,6 @@ public class BMCExtractor implements Extractor {
      */
     private void compareDependencies(VcdFile vcd, Integer t1, Integer t2, int distance, RISCVInstruction instr_1, RISCVInstruction instr_2, Set<RISCVObservation> obs) {
         try {
-            // TODO when applicable
             Integer prev_t1 = t1;
             Integer prev_t2 = t2;
             for (int i = 0; i < distance; i++) {
@@ -113,7 +112,7 @@ public class BMCExtractor implements Extractor {
             if (!(instr_1.hasRS1() && previous_instr_1.hasRD()) && (instr_2.hasRS1() && previous_instr_2.hasRD())) {
                 obs.add(new RISCVObservation(instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
             }
-            
+
             if ((instr_1.hasRS2() && previous_instr_1.hasRD()) && (instr_2.hasRS2() && previous_instr_2.hasRD()) && (Objects.equals(instr_1.rs2(), previous_instr_1.rd()) != !Objects.equals(instr_2.rs2(), previous_instr_2.rd()))) {
                 obs.add(new RISCVObservation(instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
                 obs.add(new RISCVObservation(instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
