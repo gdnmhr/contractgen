@@ -690,7 +690,7 @@ end // initial
 integer i;
 always @(*) begin
   for (i = 0; i < 32; i = i + 1) begin
-    if (i == regfile_MPORT_1_addr) begin
+    if ((i == regfile_MPORT_1_addr) & regfile_MPORT_1_en) begin
       rvfi_regfile[i] = regfile_MPORT_1_data;
     end else begin
       rvfi_regfile[i] = regfile[i];

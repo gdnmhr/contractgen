@@ -118,9 +118,9 @@ public class ILPUpdater implements Updater {
 
             MPConstraint lower_constraint = solver.makeConstraint(0.0, MPSolver.infinity(), "L_" + pe.getIndex());
             lower_constraint.setCoefficient(var, -1);
-                for (Observation obs : pe.getDistinguishingObservations()) {
+            for (Observation obs : pe.getDistinguishingObservations()) {
                 lower_constraint.setCoefficient(selected_observations.get(obs), 1);
-                }
+            }
             for (Pair<Type, Type> pair : pe.getDistinguishingInstructions()) {
                 for (MPVariable var2 : type_pairs.get(pair)) {
                     lower_constraint.setCoefficient(var2, 1);
