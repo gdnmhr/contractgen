@@ -23,67 +23,70 @@ module data_mem (
         last_values = 0;
     end
 
+    assign data_gnt_o = data_req_i;
+    assign data_rvalid_o = data_req_i && !data_we_i;
+    assign data_err_o = 1'b0;
+    
     integer i;
+    always_comb begin : data_rdata_o_gen
+        data_rdata_o = 0;
+        for (int i = 0; i < `COUNT; i = i + 1) begin
+            if (data_be_i[0] && data_addr_i == last_addr[i]) begin
+                data_rdata_o[7:0] = last_values[i];
+            end
+            if (data_be_i[1] && data_addr_i + 1 == last_addr[i]) begin
+                data_rdata_o[15:8] = last_values[i];
+            end
+            if (data_be_i[2] && data_addr_i + 2 == last_addr[i]) begin
+                data_rdata_o[23:16] = last_values[i];
+            end
+            if (data_be_i[3] && data_addr_i + 3 == last_addr[i]) begin
+                data_rdata_o[31:24] = last_values[i];
+            end
+        end
+        
+    end
+
     integer j;
+    integer k;
+    integer l;
+    integer m;
     always @(posedge clk_i) begin
         if (data_req_i == 1'b1) begin
-            temp = data_addr_i % 32'h1000;
-            for (i = 0; i < `COUNT; i = i + 1) begin
-                if (data_be_i[0] && (data_addr_i + 0) == last_addr[i]) begin
-                    temp[(0 * 8) + 7:(0 * 8)] = last_values[i];
-                end
-                if (data_be_i[1] && (data_addr_i + 1) == last_addr[i]) begin
-                    temp[(1 * 8) + 7:(1 * 8)] = last_values[i];
-                end
-                if (data_be_i[2] && (data_addr_i + 2) == last_addr[i]) begin
-                    temp[(2 * 8) + 7:(2 * 8)] = last_values[i];
-                end
-                if (data_be_i[3] && (data_addr_i + 3) == last_addr[i]) begin
-                    temp[(3 * 8) + 7:(3 * 8)] = last_values[i];
-                end
-            end
-            data_rdata_o <= temp;
             if (data_we_i) begin
                 if (data_be_i[0]) begin
-                    for (i = 1; i < `COUNT; i = i + 1) begin
-                        last_addr[i-1] = last_addr[i];
-                        last_values[i-1] = last_values[i];
+                    for (j = 1; j < `COUNT; j = j + 1) begin
+                        last_addr[j-1] = last_addr[j];
+                        last_values[j-1] = last_values[j];
                     end
                     last_addr[`COUNT - 1] = data_addr_i + 0;
                     last_values[`COUNT - 1] = data_wdata_i[(0 * 8) + 7:(0 * 8)];
                 end
                 if (data_be_i[1]) begin
-                    for (i = 1; i < `COUNT; i = i + 1) begin
-                        last_addr[i-1] = last_addr[i];
-                        last_values[i-1] = last_values[i];
+                    for (k = 1; k < `COUNT; k = k + 1) begin
+                        last_addr[k-1] = last_addr[k];
+                        last_values[k-1] = last_values[k];
                     end
                     last_addr[`COUNT - 1] = data_addr_i + 1;
                     last_values[`COUNT - 1] = data_wdata_i[(1 * 8) + 7:(1 * 8)];
                 end
                 if (data_be_i[2]) begin
-                    for (i = 1; i < `COUNT; i = i + 1) begin
-                        last_addr[i-1] = last_addr[i];
-                        last_values[i-1] = last_values[i];
+                    for (l = 1; l < `COUNT; l = l + 1) begin
+                        last_addr[l-1] = last_addr[l];
+                        last_values[l-1] = last_values[l];
                     end
                     last_addr[`COUNT - 1] = data_addr_i + 2;
                     last_values[`COUNT - 1] = data_wdata_i[(2 * 8) + 7:(2 * 8)];
                 end
                 if (data_be_i[3]) begin
-                    for (i = 1; i < `COUNT; i = i + 1) begin
-                        last_addr[i-1] = last_addr[i];
-                        last_values[i-1] = last_values[i];
+                    for (m = 1; m < `COUNT; m = m + 1) begin
+                        last_addr[m-1] = last_addr[m];
+                        last_values[m-1] = last_values[m];
                     end
                     last_addr[`COUNT - 1] = data_addr_i + 3;
                     last_values[`COUNT - 1] = data_wdata_i[(3 * 8) + 7:(3 * 8)];
                 end
             end
-            data_gnt_o <= 1'b1;
-            data_rvalid_o <= 1'b1;
-            data_err_o <= 1'b0;
-        end else begin
-            data_gnt_o <= 1'b0;
-            data_rvalid_o <= 1'b0;
-            data_err_o <= 1'b0;
         end
     end
 
