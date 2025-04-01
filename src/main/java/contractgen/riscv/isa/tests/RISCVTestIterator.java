@@ -16,7 +16,7 @@ public class RISCVTestIterator implements Iterator<TestCase> {
     /**
      * The test generator.
      */
-    private final RISCVTestGenerator generator;
+    private final RISCVTestGenearatorInterface generator;
     /**
      * The total number of test cases to be evaluated.
      */
@@ -36,8 +36,8 @@ public class RISCVTestIterator implements Iterator<TestCase> {
      * @param seed                 the random seed.
      * @param total                the total number of test cases to be generated.
      */
-    public RISCVTestIterator(Set<RISCV_SUBSET> subsets, Set<RISCV_OBSERVATION_TYPE> allowed_observations, long seed, int total) {
-        generator = new RISCVTestGenerator(subsets, allowed_observations, seed, 0);
+    public RISCVTestIterator(Set<RISCV_SUBSET> subsets, Set<RISCV_OBSERVATION_TYPE> allowed_observations, long seed, int total, boolean isSP) {
+        generator = isSP ?  new RISCVTestGeneratorSP(subsets, allowed_observations, seed, 0) : new RISCVTestGenerator(subsets, allowed_observations, seed, 0);
         this.total = total;
         this.chunk = generator.nextRepetition(count);
     }

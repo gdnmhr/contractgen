@@ -62,8 +62,10 @@ IBEX extends MARCH {
      * @param updater   The updater to be used to update the contract.
      * @param testCases The test cases to be used for generation or evaluation.
      */
-    public IBEX(VARIANT VARIANT, Updater updater, TestCases testCases, Set<RISCV_OBSERVATION_TYPE> allowed_observations, Set<RISCV_SUBSET> isa) {
-        super(new RISCV(allowed_observations, isa, updater, testCases), new RVFIExtractor(allowed_observations));
+    public IBEX(VARIANT VARIANT, Updater updater, TestCases testCases, Set<RISCV_OBSERVATION_TYPE> allowed_observations, Set<RISCV_SUBSET> isa, boolean isSP) {
+        super(new RISCV(allowed_observations, isa, updater, testCases), new RVFIExtractor(allowed_observations, isSP));
+        this.VARIANT = VARIANT;
+    }
         this.VARIANT = VARIANT;
     }
 

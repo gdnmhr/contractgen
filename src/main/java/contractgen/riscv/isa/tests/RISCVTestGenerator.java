@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 /**
  * A generator for RISC-V test cases.
  */
-public class RISCVTestGenerator {
+public class RISCVTestGenerator implements RISCVTestGenearatorInterface {
     /**
      * The number of registers in the microarchitecture.
      */

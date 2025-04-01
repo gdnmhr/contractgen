@@ -28,8 +28,10 @@ public class RVFIExtractor implements Extractor {
 
     private Set<RISCV_OBSERVATION_TYPE> allowed_observations;
 
-    public RVFIExtractor(Set<RISCV_OBSERVATION_TYPE> allowed_observations) {
+    private boolean isSP;
+    public RVFIExtractor(Set<RISCV_OBSERVATION_TYPE> allowed_observations, boolean isSP) {
         this.allowed_observations = allowed_observations;
+        this.isSP = isSP;
     }
 
     @Override
@@ -44,7 +46,8 @@ public class RVFIExtractor implements Extractor {
         Set<Pair<RISCV_TYPE, RISCV_TYPE>> distinguishingInstructions = new HashSet<>();
         Wire retire_count = vcd.getTop().getChild("control").getWire("retire_count");
         int currentCount = Integer.parseInt(retire_count.getValueAt(retire_count.getLastChangeTime()), 2);
-        while (currentCount > 0) {
+        int limit = isSP ? 31 : 0;
+        while (currentCount > limit) {
             Integer retire_time = retire_count.getFirstTimeValue(StringUtils.toBinaryEncoding((long) currentCount));
 
             if (!compareInstructions(vcd, retire_time, obs, distinguishingInstructions)) {
