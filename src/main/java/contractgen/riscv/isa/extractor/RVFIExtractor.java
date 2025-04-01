@@ -29,13 +29,26 @@ public class RVFIExtractor implements Extractor {
     private Set<RISCV_OBSERVATION_TYPE> allowed_observations;
 
     private boolean isSP;
+    private boolean useUnsafeInstructions;
+    private Set<RISCV_TYPE> unsafeInstructions;
+
     public RVFIExtractor(Set<RISCV_OBSERVATION_TYPE> allowed_observations, boolean isSP) {
         this.allowed_observations = allowed_observations;
         this.isSP = isSP;
+        this.useUnsafeInstructions = false;
+        this.unsafeInstructions = Set.of();
+    }
+
+    public RVFIExtractor(Set<RISCV_OBSERVATION_TYPE> allowed_observations, boolean isSP, Set<RISCV_TYPE> unsafeInstructions) {
+        this.allowed_observations = allowed_observations;
+        this.isSP = isSP;
+        this.useUnsafeInstructions = true;
+        this.unsafeInstructions = unsafeInstructions;
     }
 
     @Override
     public TestResult extractResults(String PATH, boolean adversaryDistinguishable, int index) {
+        boolean containedUnsafeInstruction = false;
         VcdFile vcd;
         try {
             vcd = new VcdFile(Files.readString(Path.of(PATH + "sim.vcd")));
@@ -58,6 +71,10 @@ public class RVFIExtractor implements Extractor {
             RISCVInstruction instr_1 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("ctr").getWire("instr_1_i").getValueAt(retire_time));
             RISCVInstruction instr_2 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("ctr").getWire("instr_2_i").getValueAt(retire_time));
 
+            if (unsafeInstructions.contains(instr_1.type()) || unsafeInstructions.contains(instr_2.type())) {
+                containedUnsafeInstruction = true;
+            }
+
             compareRegisters(vcd, retire_time, instr_1, instr_2, obs);
             compareMemory(vcd, retire_time, instr_1, instr_2, obs);
             compareBranch(vcd, retire_time, instr_1, instr_2, obs);
@@ -68,7 +85,7 @@ public class RVFIExtractor implements Extractor {
             currentCount--;
         }        
         obs= obs.stream().filter(o -> allowed_observations.contains(o.observation())).collect(Collectors.toSet());
-        return new RISCVTestResult(obs, distinguishingInstructions, adversaryDistinguishable, index);
+        return new RISCVTestResult(obs, distinguishingInstructions, useUnsafeInstructions ? containedUnsafeInstruction : adversaryDistinguishable, index);
     }
 
     /**

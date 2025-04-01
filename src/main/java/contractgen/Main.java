@@ -35,7 +35,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-@Command(name = "main", subcommands = {Synthesize.class, Analyze.class, Update.class, Evaluate.class, Falsify.class, PrintAtoms.class}, description = "Main application command.")
+@Command(name = "main", subcommands = {Synthesize.class, Analyze.class, Update.class, Evaluate.class, Falsify.class, PrintAtoms.class, UnsafeInstructions.class}, description = "Main application command.")
 public class Main implements Callable<Integer> {
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Main()).execute(args);
@@ -106,6 +106,83 @@ class Synthesize implements Callable<Integer> {
                 case DARKRISCV_3 -> new DARKRISCV_3(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa, isSP);
             }, 
             threads, false, null);
+        
+        long start = System.currentTimeMillis();
+        Contract contract;
+        try {
+            contract = generator.generate();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        long finish = System.currentTimeMillis();
+        long timeElapsed = finish - start;
+        System.out.println("Generation time: " + timeElapsed);
+        System.out.println(contract);
+        if (txt != null) {
+            try {
+                Files.write(Path.of(txt.getPath()), contract.toString().getBytes());
+            } catch (IOException e) {
+            }
+        }
+        try (FileWriter writer = new FileWriter(out)) {
+            contract.toJSON(writer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return 0;
+    }
+}
+
+@Command(name = "unsafeInstructions", description = "Check if a program contains unsafe Instructions.")
+class UnsafeInstructions implements Callable<Integer> {
+    // select the processor
+    @Option(names = {"-p", "--processor"}, required = true, description = "The processor to use. Options: ${COMPLETION-CANDIDATES}")
+    CONFIG.PROCESSOR processor;
+
+    // select ISA
+    @Option(names = {"-i", "--isa"}, required = true, description = "The ISA to use. Options: ${COMPLETION-CANDIDATES}", split = ",")
+    Set<RISCV_SUBSET> isa;
+
+    // select contract template
+    @Option(names = {"-c", "--contract"}, required = true, description = "The contract template to use. Options: ${COMPLETION-CANDIDATES}", split = ",")
+    Set<RISCV_OBSERVATION_TYPE.RISCV_OBSERVATION_TYPE_GROUP> template;
+
+    @Option(names = {"-u", "--unsafe"}, required = true, description = "The unsafe instructions to check for. Options: ${COMPLETION-CANDIDATES}", split = ",")
+    Set<RISCV_TYPE> unsafeInstructions;
+
+    // select number of test cases
+    @Option(names = {"-n"}, required = true, description = "Number of test cases")
+    int number;
+
+    // select number of threads
+    @Option(names = {"-t"}, required = true, description = "Number of threads")
+    int threads;
+
+    // select seed
+    @Option(names = {"-s"}, required = true, description = "Seed")
+    long seed;
+
+    @Option(names = {"-o", "--output"}, required = true, description = "Output path (JSON)")
+    File out;
+
+    @Option(names = {"--txt"}, description = "Output path for txt-summary")
+    File txt;
+
+    @Option(names = {"--sp"}, description = "Only consider identical programs (same program mode)")
+    boolean isSP = false;
+
+    @Override
+    public Integer call() {
+        if (processor != CONFIG.PROCESSOR.IBEX) {
+            System.out.println("Only IBEX is supported.");
+            return 0;
+        }
+        TestCases tc = new RISCVIterativeTests(isa, RISCV_OBSERVATION_TYPE.getGroups(template), seed, threads, number, isSP);
+        Generator generator = new 
+        ParallelIverilogGenerator(
+            new IBEX(IBEX.VARIANT.BASE, new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa, isSP, unsafeInstructions),
+            threads, false, null
+        );
         
         long start = System.currentTimeMillis();
         Contract contract;
