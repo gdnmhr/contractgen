@@ -141,7 +141,7 @@ module top (
         .ID                     (1),
     ) instr_mem_1 (
         .clk_i                  (clock_1),
-        .enable_i               (enable_1),
+        .enable_i               (1'b1),
         .instr_req_i            (imem_req_1),
         .instr_addr_i           (imem_addr_1),
         .instr_gnt_o            (imem_gnt_1),
@@ -152,7 +152,7 @@ module top (
         .ID                     (2),
     ) instr_mem_2 (
         .clk_i                  (clock_2),
-        .enable_i               (enable_2),
+        .enable_i               (1'b1),
         .instr_req_i            (imem_req_2),
         .instr_addr_i           (imem_addr_2),
         .instr_gnt_o            (imem_gnt_2),
