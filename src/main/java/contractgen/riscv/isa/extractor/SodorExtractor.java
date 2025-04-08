@@ -24,9 +24,11 @@ import java.util.Set;
 public class SodorExtractor implements Extractor {
 
     private Set<RISCV_OBSERVATION_TYPE> allowed_observations;
+    private String core_name;
 
-    public SodorExtractor(Set<RISCV_OBSERVATION_TYPE> allowed_observations) {
+    public SodorExtractor(Set<RISCV_OBSERVATION_TYPE> allowed_observations, String core_name) {
         this.allowed_observations = allowed_observations;
+        this.core_name = core_name;
     }
 
     @Override
@@ -39,10 +41,10 @@ public class SodorExtractor implements Extractor {
         }
         Set<RISCVObservation> obs = new HashSet<>();
         Set<Pair<RISCV_TYPE, RISCV_TYPE>> distinguishingInstructions = new HashSet<>();
-        Wire valid1 = vcd.getTop().getChild("left").getChild("Core_2stage").getWire("rvfi_valid");
-        Wire valid2 = vcd.getTop().getChild("right").getChild("Core_2stage").getWire("rvfi_valid");
-        Wire order1 = vcd.getTop().getChild("left").getChild("Core_2stage").getWire("rvfi_order");
-        Wire order2 = vcd.getTop().getChild("right").getChild("Core_2stage").getWire("rvfi_order");
+        Wire valid1 = vcd.getTop().getChild("left").getChild(this.core_name).getWire("rvfi_valid");
+        Wire valid2 = vcd.getTop().getChild("right").getChild(this.core_name).getWire("rvfi_valid");
+        Wire order1 = vcd.getTop().getChild("left").getChild(this.core_name).getWire("rvfi_order");
+        Wire order2 = vcd.getTop().getChild("right").getChild(this.core_name).getWire("rvfi_order");
         int expected_order = 1;
         Integer t1 = order1.getFirstTimeValue(Integer.toBinaryString(expected_order));
         Integer t2 = order2.getFirstTimeValue(Integer.toBinaryString(expected_order));
@@ -53,8 +55,8 @@ public class SodorExtractor implements Extractor {
             if (compareInstructions(vcd, t1, t2, obs, distinguishingInstructions)) {
                 // valid instruction
                 
-                RISCVInstruction instr_1 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("left").getChild("Core_2stage").getWire("rvfi_insn").getValueAt(t1));
-                RISCVInstruction instr_2 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("right").getChild("Core_2stage").getWire("rvfi_insn").getValueAt(t2));
+                RISCVInstruction instr_1 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("left").getChild(this.core_name).getWire("rvfi_insn").getValueAt(t1));
+                RISCVInstruction instr_2 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("right").getChild(this.core_name).getWire("rvfi_insn").getValueAt(t2));
 
                 compareRegisters(vcd, t1, t2, instr_1, instr_2, obs);
                 compareMemory(vcd, t1, t2, instr_1, instr_2, obs);
@@ -88,14 +90,14 @@ public class SodorExtractor implements Extractor {
             Integer prev_t1 = t1;
             Integer prev_t2 = t2;
             for (int i = 0; i < distance; i++) {
-                prev_t1 = vcd.getTop().getChild("left").getChild("Core_2stage").getWire("rvfi_valid").getFirstTimeValueBefore("1", prev_t1);
-                prev_t2 = vcd.getTop().getChild("right").getChild("Core_2stage").getWire("rvfi_valid").getFirstTimeValueBefore("1", prev_t2);
+                prev_t1 = vcd.getTop().getChild("left").getChild(this.core_name).getWire("rvfi_valid").getFirstTimeValueBefore("1", prev_t1);
+                prev_t2 = vcd.getTop().getChild("right").getChild(this.core_name).getWire("rvfi_valid").getFirstTimeValueBefore("1", prev_t2);
             }
             if (prev_t1 == null || prev_t2 == null) {
                 return;
             }
-            RISCVInstruction previous_instr_1 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("left").getChild("Core_2stage").getWire("rvfi_insn").getValueAt(prev_t1));
-            RISCVInstruction previous_instr_2 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("right").getChild("Core_2stage").getWire("rvfi_insn").getValueAt(prev_t2));
+            RISCVInstruction previous_instr_1 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("left").getChild(this.core_name).getWire("rvfi_insn").getValueAt(prev_t1));
+            RISCVInstruction previous_instr_2 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("right").getChild(this.core_name).getWire("rvfi_insn").getValueAt(prev_t2));
 
             if (previous_instr_1 == null || previous_instr_2 == null) {
                 return;
@@ -152,10 +154,10 @@ public class SodorExtractor implements Extractor {
         Module right = vcd.getTop().getChild("right");
         Boolean is_branch_1 = instr_1.isBRANCH() || instr_1.isJUMP();
         Boolean is_branch_2 = instr_2.isBRANCH() || instr_2.isJUMP();
-        Boolean branch_taken_1 = Integer.parseInt(left.getChild("Core_2stage").getWire("branch_taken").getValueAt(t1), 2) == 1 || instr_1.isJUMP();
-        Boolean branch_taken_2 = Integer.parseInt(right.getChild("Core_2stage").getWire("branch_taken").getValueAt(t2), 2) == 1 || instr_2.isJUMP();
-        String new_pc_1 = left.getChild("Core_2stage").getWire("rvfi_pc_wdata").getValueAt(t1);
-        String new_pc_2 = right.getChild("Core_2stage").getWire("rvfi_pc_wdata").getValueAt(t2);
+        Boolean branch_taken_1 = Integer.parseInt(left.getChild(this.core_name).getWire("branch_taken").getValueAt(t1), 2) == 1 || instr_1.isJUMP();
+        Boolean branch_taken_2 = Integer.parseInt(right.getChild(this.core_name).getWire("branch_taken").getValueAt(t2), 2) == 1 || instr_2.isJUMP();
+        String new_pc_1 = left.getChild(this.core_name).getWire("rvfi_pc_wdata").getValueAt(t1);
+        String new_pc_2 = right.getChild(this.core_name).getWire("rvfi_pc_wdata").getValueAt(t2);
 
         if ((instr_1.isCONTROL() && instr_2.isCONTROL()) && !Objects.equals(is_branch_1, is_branch_2)) {
             obs.add(new RISCVObservation(instr_1.type(), RISCV_OBSERVATION_TYPE.IS_BRANCH));
@@ -201,8 +203,8 @@ public class SodorExtractor implements Extractor {
      * @param obs2    the current set of observations for execution two.
      */
     private void compareMemory(VcdFile vcd, Integer t1, Integer t2, RISCVInstruction instr_1, RISCVInstruction instr_2, Set<RISCVObservation> obs) {
-        Module left = vcd.getTop().getChild("left").getChild("Core_2stage");
-        Module right = vcd.getTop().getChild("right").getChild("Core_2stage");
+        Module left = vcd.getTop().getChild("left").getChild(this.core_name);
+        Module right = vcd.getTop().getChild("right").getChild(this.core_name);
         String mem_addr_1 = left.getWire("rvfi_mem_addr").getValueAt(t1);
         String mem_addr_2 = right.getWire("rvfi_mem_addr").getValueAt(t2);
         String mem_r_data_1 = left.getWire("rvfi_mem_rdata").getValueAt(t1);
@@ -280,8 +282,8 @@ public class SodorExtractor implements Extractor {
      * @param obs2    the current set of observations for execution two.
      */
     private void compareRegisters(VcdFile vcd, Integer t1, Integer t2, RISCVInstruction instr_1, RISCVInstruction instr_2, Set<RISCVObservation> obs) {
-        Module left = vcd.getTop().getChild("left").getChild("Core_2stage");
-        Module right = vcd.getTop().getChild("right").getChild("Core_2stage");
+        Module left = vcd.getTop().getChild("left").getChild(this.core_name);
+        Module right = vcd.getTop().getChild("right").getChild(this.core_name);
         String reg_rs1_1 = left.getWire("rvfi_rs1_rdata").getValueAt(t1);
         String reg_rs1_2 = right.getWire("rvfi_rs1_rdata").getValueAt(t2);
         String reg_rs2_1 = left.getWire("rvfi_rs2_rdata").getValueAt(t1);
@@ -377,8 +379,8 @@ public class SodorExtractor implements Extractor {
         RISCVInstruction instr_1;
         RISCVInstruction instr_2;
         try {
-            instr_1 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("left").getChild("Core_2stage").getWire("rvfi_insn").getValueAt(t1));
-            instr_2 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("right").getChild("Core_2stage").getWire("rvfi_insn").getValueAt(t2));
+            instr_1 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("left").getChild(this.core_name).getWire("rvfi_insn").getValueAt(t1));
+            instr_2 = RISCVInstruction.parseBinaryString(vcd.getTop().getChild("right").getChild(this.core_name).getWire("rvfi_insn").getValueAt(t2));
 
             if (!Objects.equals(instr_1.type(), instr_2.type())) {
                 distinguishingInstructions.add(new Pair<RISCV_TYPE, RISCV_TYPE>(instr_1.type(), instr_2.type()));

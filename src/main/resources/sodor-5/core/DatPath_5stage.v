@@ -450,6 +450,7 @@ module DatPath_5stage(
   );
   RegisterFile_5stage RegisterFile_5stage ( // @[dpath.scala 216:24]
     .clock(regfile_clock),
+    .reset(reset),
     .io_rs1_addr(regfile_io_rs1_addr),
     .io_rs1_data(regfile_io_rs1_data),
     .io_rs2_addr(regfile_io_rs2_addr),

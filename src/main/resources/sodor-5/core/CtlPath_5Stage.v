@@ -653,4 +653,15 @@ end // initial
 `FIRRTL_AFTER_INITIAL
 `endif
 `endif // SYNTHESIS
+
+always @(posedge clock) begin
+  if (reset) begin 
+      ifkill_REG <= 1'h0;
+      exe_reg_wbaddr <= 5'h0;
+      io_ctl_fencei_REG <= 1'h0;
+      io_ctl_mem_exception_REG <= 1'h0;
+      io_ctl_mem_exception_cause_REG <= 1'h0;
+      io_ctl_mem_exception_cause_REG_1 <= 1'h0;
+  end
+end
 endmodule

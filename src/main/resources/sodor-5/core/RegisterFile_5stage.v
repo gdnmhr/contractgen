@@ -1,5 +1,6 @@
 module RegisterFile_5stage(
   input         clock,
+  input         reset,
   input  [4:0]  io_rs1_addr,
   output [31:0] io_rs1_data,
   input  [4:0]  io_rs2_addr,
@@ -51,7 +52,9 @@ module RegisterFile_5stage(
   assign io_rs1_data = io_rs1_addr != 5'h0 ? regfile_io_rs1_data_MPORT_data : 32'h0; // @[regfile.scala 47:22]
   assign io_rs2_data = io_rs2_addr != 5'h0 ? regfile_io_rs2_data_MPORT_data : 32'h0; // @[regfile.scala 48:22]
   always @(posedge clock) begin
-    if (regfile_MPORT_en & regfile_MPORT_mask) begin
+    if (reset) begin
+      regfile <= 0;
+    end else if (regfile_MPORT_en & regfile_MPORT_mask) begin
       regfile[regfile_MPORT_addr] <= regfile_MPORT_data; // @[regfile.scala 35:21]
     end
     if (regfile_MPORT_1_en & regfile_MPORT_1_mask) begin

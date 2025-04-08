@@ -235,8 +235,8 @@ class Analyze implements Callable<Integer> {
                 case IBEX_SMALL -> new BMCExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
                 case IBEX_CACHE -> new BMCExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
                 case CVA6 -> throw new RuntimeException("CVA6 not supported.");
-                case SODOR_2 -> new SodorExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
-                case SODOR_5 -> new SodorExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
+                case SODOR_2 -> new SodorExtractor(RISCV_OBSERVATION_TYPE.getGroups(template), "Core_2stage");
+                case SODOR_5 -> new SodorExtractor(RISCV_OBSERVATION_TYPE.getGroups(template), "Core_5stage");
                 case DARKRISCV_2 -> new DarkRISCVExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
                 case DARKRISCV_3 -> new DarkRISCVExtractor(RISCV_OBSERVATION_TYPE.getGroups(template));
             };
