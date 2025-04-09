@@ -43,10 +43,11 @@ public class Sodor5Extractor implements Extractor {
         Wire valid2 = vcd.getTop().getChild("right").getChild("Core_5stage").getChild("DatPath_5stage").getWire("rvfi_valid");
         Wire order1 = vcd.getTop().getChild("left").getChild("Core_5stage").getChild("DatPath_5stage").getWire("rvfi_order");
         Wire order2 = vcd.getTop().getChild("right").getChild("Core_5stage").getChild("DatPath_5stage").getWire("rvfi_order");
+        Integer sim_end = vcd.getTop().getWire("clock").getLastChangeTime();
         int expected_order = 1;
         Integer t1 = order1.getFirstTimeValue(Integer.toBinaryString(expected_order));
         Integer t2 = order2.getFirstTimeValue(Integer.toBinaryString(expected_order));
-        while (t1 != null && t2 != null) {
+        while (t1 != null && t2 != null && t1 < sim_end - 10 && t2 < sim_end - 10) {
             if (!valid1.getValueAt(t1).equals("1") || !valid2.getValueAt(t2).equals("1")) {
                 throw new IllegalStateException("both rvfi should be valid.");
             }
