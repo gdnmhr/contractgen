@@ -111,7 +111,7 @@ public class RVFIExtractor implements Extractor {
                 return;
             }
 
-            if ((instr_1.hasRS1() && previous_instr_1.hasRD()) && (instr_2.hasRS1() && previous_instr_2.hasRD()) && (Objects.equals(instr_1.rs1(), previous_instr_1.rd()) != !Objects.equals(instr_2.rs1(), previous_instr_2.rd()))) {
+            if ((instr_1.hasRS1() && previous_instr_1.hasRD()) && (instr_2.hasRS1() && previous_instr_2.hasRD()) && (Objects.equals(instr_1.rs1(), previous_instr_1.rd()) != Objects.equals(instr_2.rs1(), previous_instr_2.rd()))) {
                 obs.add(new RISCVObservation(instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
                 obs.add(new RISCVObservation(instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
             }
@@ -122,7 +122,7 @@ public class RVFIExtractor implements Extractor {
                 obs.add(new RISCVObservation(instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS1, distance)));
             }
 
-            if ((instr_1.hasRS2() && previous_instr_1.hasRD()) && (instr_2.hasRS2() && previous_instr_2.hasRD()) && (Objects.equals(instr_1.rs2(), previous_instr_1.rd()) != !Objects.equals(instr_2.rs2(), previous_instr_2.rd()))) {
+            if ((instr_1.hasRS2() && previous_instr_1.hasRD()) && (instr_2.hasRS2() && previous_instr_2.hasRD()) && (Objects.equals(instr_1.rs2(), previous_instr_1.rd()) != Objects.equals(instr_2.rs2(), previous_instr_2.rd()))) {
                 obs.add(new RISCVObservation(instr_1.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
                 obs.add(new RISCVObservation(instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
             }
@@ -133,7 +133,7 @@ public class RVFIExtractor implements Extractor {
                 obs.add(new RISCVObservation(instr_2.type(), getDependencyObservationType(DEPENDENCY.RAW_RS2, distance)));
             }
 
-            if ((instr_1.hasRD() && previous_instr_1.hasRD()) && (instr_2.hasRD() && previous_instr_2.hasRD()) && (Objects.equals(instr_1.rd(), previous_instr_1.rd()) != !Objects.equals(instr_2.rd(), previous_instr_2.rd()))) {
+            if ((instr_1.hasRD() && previous_instr_1.hasRD()) && (instr_2.hasRD() && previous_instr_2.hasRD()) && (Objects.equals(instr_1.rd(), previous_instr_1.rd()) != Objects.equals(instr_2.rd(), previous_instr_2.rd()))) {
                 obs.add(new RISCVObservation(instr_1.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
                 obs.add(new RISCVObservation(instr_2.type(), getDependencyObservationType(DEPENDENCY.WAW, distance)));
             }
