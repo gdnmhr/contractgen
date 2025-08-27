@@ -46,7 +46,9 @@ public class BMCExtractor implements Extractor {
         int expected_order = 1;
         Integer t1 = order1.getFirstTimeValue(Integer.toBinaryString(expected_order));
         Integer t2 = order2.getFirstTimeValue(Integer.toBinaryString(expected_order));
-        while (t1 != null && t2 != null) {
+        Integer last_positive_clock_edge = vcd.getTop().getWire("clk_i").getLastChangeTime() - 10;
+
+        while (t1 != null && t2 != null && t1 < last_positive_clock_edge && t2 < last_positive_clock_edge) {
             if (!valid1.getValueAt(t1).equals("1") || !valid2.getValueAt(t2).equals("1")) {
                 throw new IllegalStateException("both rvfi should be valid.");
             }

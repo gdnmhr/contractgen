@@ -10,6 +10,7 @@ import contractgen.riscv.isa.RISCV_SUBSET;
 import contractgen.riscv.isa.RISCV_TYPE;
 import contractgen.riscv.isa.contract.RISCVContract;
 import contractgen.riscv.isa.contract.RISCVObservation;
+import contractgen.riscv.isa.contract.RISCVTestResult;
 import contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE;
 import contractgen.riscv.isa.extractor.BMCExtractor;
 import contractgen.riscv.isa.extractor.DarkRISCVExtractor;
@@ -36,7 +37,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-@Command(name = "main", subcommands = {Synthesize.class, Analyze.class, Update.class, Evaluate.class, Falsify.class, PrintAtoms.class, UnsafeInstructions.class}, description = "Main application command.")
+@Command(name = "main", subcommands = {Synthesize.class, ILP.class, Analyze.class, Update.class, Evaluate.class, Falsify.class, PrintAtoms.class, UnsafeInstructions.class}, description = "Main application command.")
 public class Main implements Callable<Integer> {
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Main()).execute(args);
@@ -91,6 +92,12 @@ class Synthesize implements Callable<Integer> {
     @Option(names = {"--sp"}, description = "Only consider identical programs (same program mode)")
     boolean isSP = false;
 
+    @Option(names = {"--skipILP"}, description = "Skip ILP after evaluating the test cases.")
+    boolean skipILP = false;
+
+    @Option(names = {"--instruction"}, description = "Always leak the instruction and the PC.")
+    boolean leakInstruction = false;
+
     @Override
     public Integer call() {
         TestCases tc = new RISCVIterativeTests(isa, RISCV_OBSERVATION_TYPE.getGroups(template), seed, threads, number, isSP);
@@ -105,13 +112,59 @@ class Synthesize implements Callable<Integer> {
                 case SODOR_5 -> new SODOR_5(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa, isSP);
                 case DARKRISCV_2 -> new DARKRISCV_2(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa, isSP);
                 case DARKRISCV_3 -> new DARKRISCV_3(new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa, isSP);
-            }, 
-            threads, false, null);
-        
+            },
+            threads, false, null, skipILP);
+
         long start = System.currentTimeMillis();
         Contract contract;
         try {
             contract = generator.generate();
+            if (leakInstruction) {
+                int index = number + 1;
+                for (RISCV_TYPE type : RISCV_TYPE.values()) {
+                    if (isa.contains(type.getSubset())) {
+                        if (Set.of(RISCV_TYPE.BEQ, RISCV_TYPE.BGE, RISCV_TYPE.BLT, RISCV_TYPE.BNE, RISCV_TYPE.BGEU, RISCV_TYPE.BLTU, RISCV_TYPE.JAL, RISCV_TYPE.JALR).contains(type)) {
+                            contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.NEW_PC)), Set.of(), true, index++));
+                        }
+                        switch (type.getFormat()) {
+                            case RTYPE:
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.FORMAT)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.OPCODE)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RD)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.FUNCT3)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RS1)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RS2)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.FUNCT7)), Set.of(), true, index++));
+                                break;
+                            case ITYPE:
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.FORMAT)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.OPCODE)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RD)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.FUNCT3)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RS1)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.IMM)), Set.of(), true, index++));
+                                break;
+                            case STYPE, BTYPE:
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.FORMAT)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.OPCODE)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.FUNCT3)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RS1)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RS2)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.IMM)), Set.of(), true, index++));
+                                break;
+                            case UTYPE, JTYPE:
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.FORMAT)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.OPCODE)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.RD)), Set.of(), true, index++));
+                                contract.add(new RISCVTestResult(Set.of(new RISCVObservation(type, RISCV_OBSERVATION_TYPE.IMM)), Set.of(), true, index++));
+                                break;
+                        }
+                    }
+                }
+                if (!skipILP) {
+                    contract.update(true);
+                }
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -182,7 +235,7 @@ class UnsafeInstructions implements Callable<Integer> {
         Generator generator = new 
         ParallelIverilogGenerator(
             new IBEX(IBEX.VARIANT.BASE, new ILPUpdater(), tc, RISCV_OBSERVATION_TYPE.getGroups(template), isa, isSP, unsafeInstructions),
-            threads, false, null
+            threads, false, null, false
         );
         
         long start = System.currentTimeMillis();
@@ -279,6 +332,36 @@ class Update implements Callable<Integer> {
             }
             contract.update(true);
             System.out.println(contract);
+            contract.toJSON(new FileWriter(out));
+            if (txt != null) {
+                try (FileWriter writer = new FileWriter(txt)) {
+                    writer.write(contract.toString());
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return 0;
+    }
+}
+
+@Command(name = "ilp", description = "Run the ILP.")
+class ILP implements Callable<Integer> {
+
+    @Option(names = {"-r", "--results"}, required = true,  description = "Results (JSON)")
+    File results;
+
+    @Option(names = {"-o", "--output"}, required = true,  description = "Output path (JSON)")
+    File out;
+
+    @Option(names = {"--txt"}, description = "Output path for txt-summary")
+    File txt;
+
+    @Override
+    public Integer call() {
+        try {
+            RISCVContract contract = RISCVContract.fromJSON(new FileReader(results));
+            contract.update(true);
             contract.toJSON(new FileWriter(out));
             if (txt != null) {
                 try (FileWriter writer = new FileWriter(txt)) {

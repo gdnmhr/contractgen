@@ -105,7 +105,8 @@ public class ContractGen {
                     },
                     cfg.THREADS, 
                     cfg.DEBUG, 
-                    cfg);
+                    cfg,
+                    false);
                 generate(training_generator, path + "training");
                 yield training_generator.MARCH.getISA().getContract();
             }
@@ -136,7 +137,8 @@ public class ContractGen {
                     },
                     cfg.THREADS, 
                     cfg.DEBUG, 
-                    cfg);
+                    cfg,
+                    false);
                 generate(eval_generator, path + "eval");
                 yield eval_generator.MARCH.getISA().getContract().getTestResults();
             }
@@ -227,7 +229,7 @@ public class ContractGen {
         tp_typeCounter.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).forEach(e -> tp_str.append(e.getValue()).append("\t").append("(").append(e.getKey().left()).append(",").append(e.getKey().right()).append(")").append("\n"));
         Files.write(Path.of(path + "-true-positives.txt"), tp_str.toString().getBytes());
         StringBuilder fn_str = new StringBuilder();
-        fn_set.forEach(res -> fn_str.append(res.getIndex()).append(":\t").append(res.getDistinguishingObservations()).append("\n"));
+        fn_set.forEach(res -> fn_str.append(res.getIndex()).append(":\t").append(res.getDistinguishingObservations()).append(res.getDistinguishingInstructions()).append("\n"));
         Files.write(Path.of(path + "-false-negatives.txt"), fn_str.toString().getBytes());
         double precision = ((double) true_positive) / ((double) true_positive + false_positive);
         double sensitivity = ((double) true_positive) / ((double) true_positive + false_negative);

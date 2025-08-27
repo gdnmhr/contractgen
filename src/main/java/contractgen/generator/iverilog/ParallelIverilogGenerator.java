@@ -29,16 +29,23 @@ public class ParallelIverilogGenerator extends Generator {
     private final CONFIG CFG;
 
     /**
+     * Whether to run ILP after evaluating the test cases.
+     */
+    private final boolean skipILP;
+
+    /**
      * @param MARCH The microarchitecture to be used.
      * @param COUNT The number of threads to be used.
      * @param DEBUG Whether statistical values should be collected.
      * @param CFG   The evaluated configuration
+     * @param skipILP Whether to run ILP after evaluating the test cases.
      */
-    public ParallelIverilogGenerator(contractgen.MARCH MARCH, final int COUNT, final boolean DEBUG, final CONFIG CFG) {
+    public ParallelIverilogGenerator(contractgen.MARCH MARCH, final int COUNT, final boolean DEBUG, final CONFIG CFG, final boolean skipILP) {
         super(MARCH);
         this.COUNT = COUNT;
         this.DEBUG = DEBUG;
         this.CFG = CFG;
+        this.skipILP = skipILP;
     }
 
     @Override
@@ -74,7 +81,9 @@ public class ParallelIverilogGenerator extends Generator {
         if (DEBUG) {
             start = System.currentTimeMillis();
         }
-        MARCH.getISA().getContract().update(true);
+        if (!skipILP) {
+            MARCH.getISA().getContract().update(true);
+        }
         if (DEBUG) {
             finish = System.currentTimeMillis();
             timeElapsed = finish - start;
