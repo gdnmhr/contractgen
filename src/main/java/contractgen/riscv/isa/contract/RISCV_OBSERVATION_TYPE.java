@@ -264,12 +264,32 @@ public enum RISCV_OBSERVATION_TYPE implements ObservationType {
         );
     }
 
+    public static Set<RISCV_OBSERVATION_TYPE> getRTL2MMUPATH() {
+        return Set.of(
+                REG_RS1,
+                REG_RS2,
+                REG_RD,
+                MEM_R_DATA,
+                MEM_W_DATA,
+                RS1,
+                RS2,
+                RD,
+                IMM,
+                FORMAT,
+                OPCODE,
+                FUNCT3,
+                FUNCT7,
+                NEW_PC
+        );
+    }
+
     public enum RISCV_OBSERVATION_TYPE_GROUP {
         BASE,
         ALIGNED,
         BRANCH,
         DEPENDENCIES,
-        VALUE
+        VALUE,
+        RTL2MMUPATH
     }
 
     public static Set<RISCV_OBSERVATION_TYPE> getGroup(RISCV_OBSERVATION_TYPE_GROUP group) {
@@ -284,6 +304,8 @@ public enum RISCV_OBSERVATION_TYPE implements ObservationType {
                 return getDependencies();
             case VALUE:
                 return getValue();
+            case RTL2MMUPATH:
+                return getRTL2MMUPATH();
             default:
                 throw new IllegalArgumentException("Unknown group: " + group);
         }
