@@ -203,9 +203,9 @@ public abstract class Contract {
     public String getTotalStats() {
         StringBuilder sb = new StringBuilder();
         sb.append("TestResults: ").append("\n");
-        sb.append("\tTotal: ").append(getTotal() / 2).append("\n");
-        sb.append("\tDistinguishable: ").append(getDistinguishableCount() / 2).append("\n");
-        sb.append("\tIndistinguishable: ").append(getIndistinguishableCount() / 2).append("\n");
+        sb.append("\tTotal: ").append(getTotal()).append("\n");
+        sb.append("\tDistinguishable: ").append(getDistinguishableCount()).append("\n");
+        sb.append("\tIndistinguishable: ").append(getIndistinguishableCount()).append("\n");
         return sb.toString();
     }
 

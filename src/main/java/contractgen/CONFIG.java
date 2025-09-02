@@ -41,6 +41,8 @@ public class CONFIG {
     public final String EVAL_EXISTING_NAME;
     public final boolean EVAL_EXISTING_FLIP_T_E;
 
+    public final boolean isSP;
+
     /**
      * @param file The file to write the config.
      * @throws IOException On filesystem errors.
@@ -76,8 +78,9 @@ public class CONFIG {
      * @param EVAL_NEW_SEED              A seed for the evaluation testcases.
      * @param EVAL_EXISTING_NAME         If an existing evaluation set should be used, the name.
      * @param EVAL_EXISTING_FLIP_T_E     Whether the training or eval of the existing set should be used.
+     * @param isSP                       Whether the test cases should be the same programs on both sides.
      */
-    private CONFIG(String NAME, PROCESSOR CORE, Set<RISCV_SUBSET> subsets, Set<RISCV_OBSERVATION_TYPE> allowed_observations, int THREADS, boolean DEBUG, CONTRACT_SOURCE TRAINING_SOURCE, int TRAINING_NEW_COUNT, long TRAINING_NEW_SEED, String TRAINING_EXISTING_NAME, boolean TRAINING_EXISTING_FLIP_T_E, RISCVContract TRAINING_PREDEFINED, CONTRACT_SOURCE EVAL_SOURCE, int EVAL_NEW_COUNT, long EVAL_NEW_SEED, String EVAL_EXISTING_NAME, boolean EVAL_EXISTING_FLIP_T_E) {
+    private CONFIG(String NAME, PROCESSOR CORE, Set<RISCV_SUBSET> subsets, Set<RISCV_OBSERVATION_TYPE> allowed_observations, int THREADS, boolean DEBUG, CONTRACT_SOURCE TRAINING_SOURCE, int TRAINING_NEW_COUNT, long TRAINING_NEW_SEED, String TRAINING_EXISTING_NAME, boolean TRAINING_EXISTING_FLIP_T_E, RISCVContract TRAINING_PREDEFINED, CONTRACT_SOURCE EVAL_SOURCE, int EVAL_NEW_COUNT, long EVAL_NEW_SEED, String EVAL_EXISTING_NAME, boolean EVAL_EXISTING_FLIP_T_E, boolean isSP) {
         this.NAME = NAME;
         this.CORE = CORE;
         this.subsets = subsets;
@@ -95,32 +98,429 @@ public class CONFIG {
         this.EVAL_NEW_SEED = EVAL_NEW_SEED;
         this.EVAL_EXISTING_NAME = EVAL_EXISTING_NAME;
         this.EVAL_EXISTING_FLIP_T_E = EVAL_EXISTING_FLIP_T_E;
+        this.isSP = isSP;
     }
 
     /**
      * @return The ibex_small config.
      */
-    public static CONFIG ibex_small() {
+    public static CONFIG ibex_base_aligned_branch() {
         return new CONFIG(
-                "ibex_small",
-                PROCESSOR.IBEX,
-                Set.of(RISCV_SUBSET.BASE, RISCV_SUBSET.M),
-                Arrays.stream(RISCV_OBSERVATION_TYPE.values()).collect(Collectors.toSet()),
-                126,
-                true,
-                CONTRACT_SOURCE.NEW,
-                20000,
-                123456789,
-                "",
-                false,
-                null,
-                CONTRACT_SOURCE.NEW,
-                100000,
-                987654321,
-                "",
-                false
+            "ibex_base_aligned_branch",
+            PROCESSOR.IBEX,
+            Set.of(RISCV_SUBSET.BASE, RISCV_SUBSET.M),
+            java.util.stream.Stream.of(
+                RISCV_OBSERVATION_TYPE.getBase(),
+                RISCV_OBSERVATION_TYPE.getAligned(),
+                RISCV_OBSERVATION_TYPE.getBranch()
+            ).flatMap(Set::stream).collect(Collectors.toSet()),
+            126,
+            true,
+            CONTRACT_SOURCE.NEW,
+            64000,
+            123456789,
+            "",
+            false,
+            null,
+            CONTRACT_SOURCE.NEW,
+            2048000,
+            987654321,
+            "",
+            false,
+            false
+        );
+    }9
+
+    /**
+     * @return The ibex_small config.
+     */
+    public static CONFIG ibex_base_aligned_branch_sp() {
+        return new CONFIG(
+            "ibex_base_aligned_branch_sp",
+            PROCESSOR.IBEX,
+            Set.of(RISCV_SUBSET.BASE, RISCV_SUBSET.M),
+            java.util.stream.Stream.of(
+                RISCV_OBSERVATION_TYPE.getBase(),
+                RISCV_OBSERVATION_TYPE.getAligned(),
+                RISCV_OBSERVATION_TYPE.getBranch()
+            ).flatMap(Set::stream).collect(Collectors.toSet()),
+            126,
+            true,
+            CONTRACT_SOURCE.NEW,
+            64000,
+            123456789,
+            "",
+            false,
+            null,
+            CONTRACT_SOURCE.NEW,
+            2048000,
+            987654321,
+            "",
+            false,
+            true
         );
     }
+
+    /**
+     * @return The ibex_small config.
+     */
+    public static CONFIG ibex_base_aligned_branch_1k() {
+        return new CONFIG(
+            "ibex_base_aligned_branch_1k",
+            PROCESSOR.IBEX,
+            Set.of(RISCV_SUBSET.BASE, RISCV_SUBSET.M),
+            java.util.stream.Stream.of(
+                RISCV_OBSERVATION_TYPE.getBase(),
+                RISCV_OBSERVATION_TYPE.getAligned(),
+                RISCV_OBSERVATION_TYPE.getBranch()
+            ).flatMap(Set::stream).collect(Collectors.toSet()),
+            126,
+            true,
+            CONTRACT_SOURCE.NEW,
+            1000,
+            123456789,
+            "",
+            false,
+            null,
+            CONTRACT_SOURCE.EXISTING,
+            0,
+            0,
+            "ibex_base_aligned_branch",
+            false,
+            false
+        );
+    }
+
+    /**
+     * @return The ibex_small config.
+     */
+    public static CONFIG ibex_base_aligned_branch_2k() {
+        return new CONFIG(
+            "ibex_base_aligned_branch_2k",
+            PROCESSOR.IBEX,
+            Set.of(RISCV_SUBSET.BASE, RISCV_SUBSET.M),
+            java.util.stream.Stream.of(
+                RISCV_OBSERVATION_TYPE.getBase(),
+                RISCV_OBSERVATION_TYPE.getAligned(),
+                RISCV_OBSERVATION_TYPE.getBranch()
+            ).flatMap(Set::stream).collect(Collectors.toSet()),
+            126,
+            true,
+            CONTRACT_SOURCE.NEW,
+            2000,
+            123456789,
+            "",
+            false,
+            null,
+            CONTRACT_SOURCE.EXISTING,
+            0,
+            0,
+            "ibex_base_aligned_branch",
+            false,
+            false
+        );
+    }
+
+    /**
+     * @return The ibex_small config.
+     */
+    public static CONFIG ibex_base_aligned_branch_4k() {
+        return new CONFIG(
+            "ibex_base_aligned_branch_4k",
+            PROCESSOR.IBEX,
+            Set.of(RISCV_SUBSET.BASE, RISCV_SUBSET.M),
+            java.util.stream.Stream.of(
+                RISCV_OBSERVATION_TYPE.getBase(),
+                RISCV_OBSERVATION_TYPE.getAligned(),
+                RISCV_OBSERVATION_TYPE.getBranch()
+            ).flatMap(Set::stream).collect(Collectors.toSet()),
+            126,
+            true,
+            CONTRACT_SOURCE.NEW,
+            4000,
+            123456789,
+            "",
+            false,
+            null,
+            CONTRACT_SOURCE.EXISTING,
+            0,
+            0,
+            "ibex_base_aligned_branch",
+            false,
+            false
+        );
+    }
+
+    /**
+     * @return The ibex_small config.
+     */
+    public static CONFIG ibex_base_aligned_branch_8k() {
+        return new CONFIG(
+            "ibex_base_aligned_branch_8k",
+            PROCESSOR.IBEX,
+            Set.of(RISCV_SUBSET.BASE, RISCV_SUBSET.M),
+            java.util.stream.Stream.of(
+                RISCV_OBSERVATION_TYPE.getBase(),
+                RISCV_OBSERVATION_TYPE.getAligned(),
+                RISCV_OBSERVATION_TYPE.getBranch()
+            ).flatMap(Set::stream).collect(Collectors.toSet()),
+            126,
+            true,
+            CONTRACT_SOURCE.NEW,
+            8000,
+            123456789,
+            "",
+            false,
+            null,
+            CONTRACT_SOURCE.EXISTING,
+            0,
+            0,
+            "ibex_base_aligned_branch",
+            false,
+            false
+        );
+    }
+
+    /**
+     * @return The ibex_small config.
+     */
+    public static CONFIG ibex_base_aligned_branch_16k() {
+        return new CONFIG(
+            "ibex_base_aligned_branch_16k",
+            PROCESSOR.IBEX,
+            Set.of(RISCV_SUBSET.BASE, RISCV_SUBSET.M),
+            java.util.stream.Stream.of(
+                RISCV_OBSERVATION_TYPE.getBase(),
+                RISCV_OBSERVATION_TYPE.getAligned(),
+                RISCV_OBSERVATION_TYPE.getBranch()
+            ).flatMap(Set::stream).collect(Collectors.toSet()),
+            126,
+            true,
+            CONTRACT_SOURCE.NEW,
+            16000,
+            123456789,
+            "",
+            false,
+            null,
+            CONTRACT_SOURCE.EXISTING,
+            0,
+            0,
+            "ibex_base_aligned_branch",
+            false,
+            false
+        );
+    }
+
+    /**
+     * @return The ibex_small config.
+     */
+    public static CONFIG ibex_base_aligned_branch_32k() {
+        return new CONFIG(
+            "ibex_base_aligned_branch_32k",
+            PROCESSOR.IBEX,
+            Set.of(RISCV_SUBSET.BASE, RISCV_SUBSET.M),
+            java.util.stream.Stream.of(
+                RISCV_OBSERVATION_TYPE.getBase(),
+                RISCV_OBSERVATION_TYPE.getAligned(),
+                RISCV_OBSERVATION_TYPE.getBranch()
+            ).flatMap(Set::stream).collect(Collectors.toSet()),
+            126,
+            true,
+            CONTRACT_SOURCE.NEW,
+            32000,
+            123456789,
+            "",
+            false,
+            null,
+            CONTRACT_SOURCE.EXISTING,
+            0,
+            0,
+            "ibex_base_aligned_branch",
+            false,
+            false
+        );
+    }
+
+    /**
+     * @return The ibex_small config.
+     */
+    public static CONFIG ibex_base_aligned_branch_64k() {
+        return new CONFIG(
+            "ibex_base_aligned_branch_64k",
+            PROCESSOR.IBEX,
+            Set.of(RISCV_SUBSET.BASE, RISCV_SUBSET.M),
+            java.util.stream.Stream.of(
+                RISCV_OBSERVATION_TYPE.getBase(),
+                RISCV_OBSERVATION_TYPE.getAligned(),
+                RISCV_OBSERVATION_TYPE.getBranch()
+            ).flatMap(Set::stream).collect(Collectors.toSet()),
+            126,
+            true,
+            CONTRACT_SOURCE.NEW,
+            64000,
+            123456789,
+            "",
+            false,
+            null,
+            CONTRACT_SOURCE.EXISTING,
+            0,
+            0,
+            "ibex_base_aligned_branch",
+            false,
+            false
+        );
+    }
+
+    /**
+     * @return The ibex_small config.
+     */
+    public static CONFIG ibex_base_aligned_branch_128k() {
+        return new CONFIG(
+            "ibex_base_aligned_branch_128k",
+            PROCESSOR.IBEX,
+            Set.of(RISCV_SUBSET.BASE, RISCV_SUBSET.M),
+            java.util.stream.Stream.of(
+                RISCV_OBSERVATION_TYPE.getBase(),
+                RISCV_OBSERVATION_TYPE.getAligned(),
+                RISCV_OBSERVATION_TYPE.getBranch()
+            ).flatMap(Set::stream).collect(Collectors.toSet()),
+            126,
+            true,
+            CONTRACT_SOURCE.NEW,
+            128000,
+            123456789,
+            "",
+            false,
+            null,
+            CONTRACT_SOURCE.EXISTING,
+            0,
+            0,
+            "ibex_base_aligned_branch",
+            false,
+            false
+        );
+    }
+
+    /**
+     * @return The ibex_small config.
+     */
+    public static CONFIG ibex_base_aligned_branch_256k() {
+        return new CONFIG(
+            "ibex_base_aligned_branch_256k",
+            PROCESSOR.IBEX,
+            Set.of(RISCV_SUBSET.BASE, RISCV_SUBSET.M),
+            java.util.stream.Stream.of(
+                RISCV_OBSERVATION_TYPE.getBase(),
+                RISCV_OBSERVATION_TYPE.getAligned(),
+                RISCV_OBSERVATION_TYPE.getBranch()
+            ).flatMap(Set::stream).collect(Collectors.toSet()),
+            126,
+            true,
+            CONTRACT_SOURCE.NEW,
+            256000,
+            123456789,
+            "",
+            false,
+            null,
+            CONTRACT_SOURCE.EXISTING,
+            0,
+            0,
+            "ibex_base_aligned_branch",
+            false,
+            false
+        );
+    }
+
+    /**
+     * @return The ibex_small config.
+     */
+    public static CONFIG ibex_base_aligned_branch_512k() {
+        return new CONFIG(
+            "ibex_base_aligned_branch_512k",
+            PROCESSOR.IBEX,
+            Set.of(RISCV_SUBSET.BASE, RISCV_SUBSET.M),
+            java.util.stream.Stream.of(
+                RISCV_OBSERVATION_TYPE.getBase(),
+                RISCV_OBSERVATION_TYPE.getAligned(),
+                RISCV_OBSERVATION_TYPE.getBranch()
+            ).flatMap(Set::stream).collect(Collectors.toSet()),
+            126,
+            true,
+            CONTRACT_SOURCE.NEW,
+            512000,
+            123456789,
+            "",
+            false,
+            null,
+            CONTRACT_SOURCE.EXISTING,
+            0,
+            0,
+            "ibex_base_aligned_branch",
+            false,
+            false
+        );
+    }
+
+    /**
+     * @return The ibex_small config.
+     */
+    public static CONFIG ibex_base_aligned_branch_1024k() {
+        return new CONFIG(
+            "ibex_base_aligned_branch_1024k",
+            PROCESSOR.IBEX,
+            Set.of(RISCV_SUBSET.BASE, RISCV_SUBSET.M),
+            java.util.stream.Stream.of(
+                RISCV_OBSERVATION_TYPE.getBase(),
+                RISCV_OBSERVATION_TYPE.getAligned(),
+                RISCV_OBSERVATION_TYPE.getBranch()
+            ).flatMap(Set::stream).collect(Collectors.toSet()),
+            126,
+            true,
+            CONTRACT_SOURCE.NEW,
+            1024000,
+            123456789,
+            "",
+            false,
+            null,
+            CONTRACT_SOURCE.EXISTING,
+            0,
+            0,
+            "ibex_base_aligned_branch",
+            false,
+            false
+        );
+    }
+
+    /**
+     * @return The ibex_small config.
+     */
+    public static CONFIG ibex_base_aligned_branch_2048k() {
+        return new CONFIG(
+            "ibex_base_aligned_branch_2048k",
+            PROCESSOR.IBEX,
+            Set.of(RISCV_SUBSET.BASE, RISCV_SUBSET.M),
+            java.util.stream.Stream.of(
+                RISCV_OBSERVATION_TYPE.getBase(),
+                RISCV_OBSERVATION_TYPE.getAligned(),
+                RISCV_OBSERVATION_TYPE.getBranch()
+            ).flatMap(Set::stream).collect(Collectors.toSet()),
+            126,
+            true,
+            CONTRACT_SOURCE.NEW,
+            2048000,
+            123456789,
+            "",
+            false,
+            null,
+            CONTRACT_SOURCE.EXISTING,
+            0,
+            0,
+            "ibex_base_aligned_branch",
+            false,
+            false
+        );
+    }
+
 
     /**
      * @return The ibex_large config.
@@ -130,7 +530,7 @@ public class CONFIG {
                 "ibex_large",
                 PROCESSOR.IBEX,
                 Set.of(RISCV_SUBSET.BASE, RISCV_SUBSET.M),
-                Arrays.stream(RISCV_OBSERVATION_TYPE.values()).collect(Collectors.toSet()),
+                Arrays.stream(RISCV_OBSERVATION_TYPE.values()).filter(type -> !RISCV_OBSERVATION_TYPE.getValue().contains(type)).collect(Collectors.toSet()),
                 126,
                 true,
                 CONTRACT_SOURCE.NEW,
@@ -143,6 +543,7 @@ public class CONFIG {
                 2000000,
                 987654321,
                 "",
+                false,
                 false
         );
     }
@@ -168,6 +569,7 @@ public class CONFIG {
                 100000,
                 987654321,
                 "",
+                false,
                 false
         );
     }
@@ -193,6 +595,7 @@ public class CONFIG {
                 2000000,
                 987654321,
                 "",
+                false,
                 false
         );
     }

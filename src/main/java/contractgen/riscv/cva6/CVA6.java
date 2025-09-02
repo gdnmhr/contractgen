@@ -3,15 +3,16 @@ package contractgen.riscv.cva6;
 import contractgen.*;
 import contractgen.riscv.isa.RISCV;
 import contractgen.riscv.isa.extractor.RVFIExtractor;
-import contractgen.util.Pair;
 import contractgen.util.StringUtils;
 import contractgen.util.vcd.VcdFile;
+import contractgen.riscv.isa.contract.RISCV_OBSERVATION_TYPE;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Set;
 
 import static contractgen.util.FileUtils.copyFileOrFolder;
 import static contractgen.util.FileUtils.replaceString;
@@ -44,9 +45,10 @@ public class CVA6 extends MARCH {
     /**
      * @param updater   The updater to be used to update the contract.
      * @param testCases The test cases to be used for generation or evaluation.
+     * @param allowed_observations The set of allowed observations.
      */
-    public CVA6(Updater updater, TestCases testCases) {
-        super(new RISCV(updater, testCases), new RVFIExtractor());
+    public CVA6(Updater updater, TestCases testCases, Set<RISCV_OBSERVATION_TYPE> allowed_observations) {
+        super(new RISCV(updater, testCases), new RVFIExtractor(allowed_observations));
     }
 
     @Override
@@ -71,21 +73,21 @@ public class CVA6 extends MARCH {
     }
 
     @Override
-    public Pair<TestResult, TestResult> extractCTX(TestCase testCase) {
+    public TestResult extractCTX(TestCase testCase) {
         return extractCTX(SIMULATION_PATH, testCase);
     }
 
     @Override
-    public Pair<TestResult, TestResult> extractCTX(int id, TestCase testCase) {
+    public TestResult extractCTX(int id, TestCase testCase) {
         return extractCTX(SIMULATION_PATH + id + "/", testCase);
     }
 
     /**
      * @param PATH     The path of the simulation.
      * @param testCase The simulated testcase.
-     * @return A set of two test results
+     * @return         The test results.
      */
-    private Pair<TestResult, TestResult> extractCTX(String PATH, TestCase testCase) {
+    private TestResult extractCTX(String PATH, TestCase testCase) {
         VcdFile vcd;
         try {
             vcd = new VcdFile(Files.readString(Path.of(PATH + "sim.vcd")));
@@ -105,22 +107,22 @@ public class CVA6 extends MARCH {
     }
 
     @Override
-    public Pair<TestResult, TestResult> extractDifferences(int index) {
+    public TestResult extractDifferences(int index) {
         return extractDifferences(SIMULATION_PATH, false, index);
     }
 
     @Override
-    public Pair<TestResult, TestResult> extractDifferences(int id, int index) {
+    public TestResult extractDifferences(int id, int index) {
         return extractDifferences(SIMULATION_PATH + id + "/", false, index);
     }
 
     /**
      * @param PATH                     The path of the vcd file.
-     * @param adversaryDistinguishable whether the simulation was distinguishable by an adversary.
-     * @param index                    the index of the testcase for further reference.
-     * @return The differences that would allow a contract to distinguish the two executions.
+     * @param adversaryDistinguishable Whether the simulation was distinguishable by an adversary.
+     * @param index                    The index of the testcase for further reference.
+     * @return                         The differences that would allow a contract to distinguish the two executions.
      */
-    private Pair<TestResult, TestResult> extractDifferences(String PATH, boolean adversaryDistinguishable, int index) {
+    private TestResult extractDifferences(String PATH, boolean adversaryDistinguishable, int index) {
         return getExtractor().extractResults(PATH, adversaryDistinguishable, index);
     }
 

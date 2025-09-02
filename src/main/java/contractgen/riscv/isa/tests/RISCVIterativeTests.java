@@ -19,11 +19,11 @@ public class RISCVIterativeTests extends TestCases {
      * @param count                the total number of testcases to be generated.
      * @return A list of testcase iterators.
      */
-    private static List<Iterator<TestCase>> createIterators(Set<RISCV_SUBSET> subsets, Set<RISCV_OBSERVATION_TYPE> allowed_observations, long seed, int THREADS, int count) {
+    private static List<Iterator<TestCase>> createIterators(Set<RISCV_SUBSET> subsets, Set<RISCV_OBSERVATION_TYPE> allowed_observations, long seed, int THREADS, int count, boolean isSP) {
         List<Iterator<TestCase>> iterators = new ArrayList<>(THREADS);
         Random r = new Random(seed);
         for (int i = 0; i < THREADS; i++) {
-            iterators.add(new RISCVTestIterator(subsets, allowed_observations, r.nextLong(), count / THREADS + (count % THREADS > i ? 1 : 0)));
+            iterators.add(new RISCVTestIterator(subsets, allowed_observations, r.nextLong(), count / THREADS + (count % THREADS > i ? 1 : 0), isSP));
         }
         return iterators;
     }
@@ -36,6 +36,17 @@ public class RISCVIterativeTests extends TestCases {
      * @param count                the total number of testcases to be generated.
      */
     public RISCVIterativeTests(Set<RISCV_SUBSET> subsets, Set<RISCV_OBSERVATION_TYPE> allowed_observations, long seed, int THREADS, int count) {
-        super(createIterators(subsets, allowed_observations, seed, THREADS, count), count);
+        super(createIterators(subsets, allowed_observations, seed, THREADS, count, false), count);
+    }
+
+    /**
+     * @param subsets              the ISA subsets to consider.
+     * @param allowed_observations the observations under consideration.
+     * @param seed                 a random seed.
+     * @param THREADS              the number of threads that will be used for generation
+     * @param count                the total number of testcases to be generated.
+     */
+    public RISCVIterativeTests(Set<RISCV_SUBSET> subsets, Set<RISCV_OBSERVATION_TYPE> allowed_observations, long seed, int THREADS, int count, boolean isSP) {
+        super(createIterators(subsets, allowed_observations, seed, THREADS, count, isSP), count);
     }
 }

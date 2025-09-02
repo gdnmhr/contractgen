@@ -145,7 +145,7 @@ public class SimpleMARCH extends MARCH {
     }
 
     @Override
-    public Pair<TestResult, TestResult> extractCTX(TestCase testCase) {
+    public TestResult extractCTX(TestCase testCase) {
         VcdFile ctx;
         try {
             ctx = new VcdFile(Files.readString(Path.of(BASE_PATH + "/syn/run/verif/engine_0/trace.vcd")));
@@ -161,49 +161,48 @@ public class SimpleMARCH extends MARCH {
 
 
         // find possible contract templates
-        Set<SimpleObservation> differences_1 = new HashSet<>();
-        Set<SimpleObservation> differences_2 = new HashSet<>();
+        Set<SimpleObservation> differences = new HashSet<>();
         assert instr_1 != null;
         assert instr_2 != null;
         if (instr_1.getType() != instr_2.getType()) {
-            differences_1.add(new SimpleObservation(instr_1.getType(), SIMPLE_OBSERVATION_TYPE.OPCODE));
-            differences_2.add(new SimpleObservation(instr_2.getType(), SIMPLE_OBSERVATION_TYPE.OPCODE));
+            differences.add(new SimpleObservation(instr_1.getType(), SIMPLE_OBSERVATION_TYPE.OPCODE));
+            differences.add(new SimpleObservation(instr_2.getType(), SIMPLE_OBSERVATION_TYPE.OPCODE));
         }
         if (!Objects.equals(instr_1.getRd(), instr_2.getRd())) {
-            differences_1.add(new SimpleObservation(instr_1.getType(), SIMPLE_OBSERVATION_TYPE.RD));
-            differences_2.add(new SimpleObservation(instr_2.getType(), SIMPLE_OBSERVATION_TYPE.RD));
+            differences.add(new SimpleObservation(instr_1.getType(), SIMPLE_OBSERVATION_TYPE.RD));
+            differences.add(new SimpleObservation(instr_2.getType(), SIMPLE_OBSERVATION_TYPE.RD));
         }
         if (!Objects.equals(instr_1.getRs1(), instr_2.getRs1())) {
-            differences_1.add(new SimpleObservation(instr_1.getType(), SIMPLE_OBSERVATION_TYPE.RS1));
-            differences_2.add(new SimpleObservation(instr_2.getType(), SIMPLE_OBSERVATION_TYPE.RS1));
+            differences.add(new SimpleObservation(instr_1.getType(), SIMPLE_OBSERVATION_TYPE.RS1));
+            differences.add(new SimpleObservation(instr_2.getType(), SIMPLE_OBSERVATION_TYPE.RS1));
         }
         if (!Objects.equals(instr_1.getRs2(), instr_2.getRs2())) {
-            differences_1.add(new SimpleObservation(instr_1.getType(), SIMPLE_OBSERVATION_TYPE.RS2));
-            differences_2.add(new SimpleObservation(instr_2.getType(), SIMPLE_OBSERVATION_TYPE.RS2));
+            differences.add(new SimpleObservation(instr_1.getType(), SIMPLE_OBSERVATION_TYPE.RS2));
+            differences.add(new SimpleObservation(instr_2.getType(), SIMPLE_OBSERVATION_TYPE.RS2));
         }
         if (instr_1.getRs1() < 8 && instr_2.getRs1() < 8 && !Objects.equals(getRegisterValue(ctx, 1, instr_1.getRs1(), fetch_1), getRegisterValue(ctx, 2, instr_2.getRs1(), fetch_2))) {
-            differences_1.add(new SimpleObservation(instr_1.getType(), SIMPLE_OBSERVATION_TYPE.REG_RS1));
-            differences_2.add(new SimpleObservation(instr_2.getType(), SIMPLE_OBSERVATION_TYPE.REG_RS1));
+            differences.add(new SimpleObservation(instr_1.getType(), SIMPLE_OBSERVATION_TYPE.REG_RS1));
+            differences.add(new SimpleObservation(instr_2.getType(), SIMPLE_OBSERVATION_TYPE.REG_RS1));
         }
         if (instr_1.getRs2() < 8 && instr_2.getRs2() < 8 && !Objects.equals(getRegisterValue(ctx, 1, instr_1.getRs2(), fetch_1), getRegisterValue(ctx, 2, instr_2.getRs2(), fetch_2))) {
-            differences_1.add(new SimpleObservation(instr_1.getType(), SIMPLE_OBSERVATION_TYPE.REG_RS2));
-            differences_2.add(new SimpleObservation(instr_2.getType(), SIMPLE_OBSERVATION_TYPE.REG_RS2));
+            differences.add(new SimpleObservation(instr_1.getType(), SIMPLE_OBSERVATION_TYPE.REG_RS2));
+            differences.add(new SimpleObservation(instr_2.getType(), SIMPLE_OBSERVATION_TYPE.REG_RS2));
         }
-        return new Pair<>(new SimpleTestResult(differences_1, true, 0), new SimpleTestResult(differences_2, true, 0));
+        return new SimpleTestResult(differences, true, 0);
     }
 
     @Override
-    public Pair<TestResult, TestResult> extractCTX(int id, TestCase testCase) {
+    public TestResult extractCTX(int id, TestCase testCase) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public Pair<TestResult, TestResult> extractDifferences(int index) {
+    public TestResult extractDifferences(int index) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public Pair<TestResult, TestResult> extractDifferences(int id, int index) {
+    public TestResult extractDifferences(int id, int index) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
